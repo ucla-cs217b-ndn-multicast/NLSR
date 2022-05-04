@@ -598,21 +598,37 @@ bool
 ConfFileProcessor::processConfSectionAdvertising(const ConfigSection& section)
 {
   for (const auto& tn : section) {
-   if (tn.first == "prefix") {
-     try {
-       ndn::Name namePrefix(tn.second.data());
-       if (!namePrefix.empty()) {
-         m_confParam.getNamePrefixList().insert(namePrefix);
-       }
-       else {
-         std::cerr << " Wrong command format ! [prefix /name/prefix] or bad URI" << std::endl;
-         return false;
-       }
-     }
-     catch (const std::exception& ex) {
-       std::cerr << ex.what() << std::endl;
-       return false;
-     }
+    if (tn.first == "prefix") {
+      try {
+        ndn::Name namePrefix(tn.second.data());
+        if (!namePrefix.empty()) {
+          m_confParam.getNamePrefixList().insert(namePrefix);
+        }
+        else {
+          std::cerr << " Wrong command format ! [prefix /name/prefix] or bad URI" << std::endl;
+          return false;
+        }
+      }
+      catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return false;
+      }
+    }
+    else if (tn.first == "mc-prefix") {
+      try {
+        ndn::Name mcNamePrefix(tn.second.data());
+        if (!mcNamePrefix.empty()) {
+          // TODO: Handle multicast name prefix registration
+        }
+        else {
+          std::cerr << " Wrong command format ! [mc-prefix /name/prefix] or bad URI" << std::endl;
+          return false;
+        }
+      }
+      catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
+        return false;
+      }
     }
   }
   return true;

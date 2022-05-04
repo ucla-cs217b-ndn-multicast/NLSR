@@ -145,13 +145,13 @@ public:
    *         returns bool from the overridden function while nullopt here
    */
   virtual ndn::optional<bool>
-  afterAdvertise(const ndn::Name& prefix) { return ndn::nullopt; }
+  afterAdvertise(const ndn::Name& prefix, bool isMulticast) { return ndn::nullopt; }
 
   /*! \brief save an advertised prefix to the nlsr configuration file
    *         returns bool from the overridden function while nullopt here
    */
   virtual ndn::optional<bool>
-  afterWithdraw(const ndn::Name& prefix) { return ndn::nullopt; }
+  afterWithdraw(const ndn::Name& prefix, bool isMulticast) { return ndn::nullopt; }
 
 protected:
   NamePrefixList& m_namePrefixList;

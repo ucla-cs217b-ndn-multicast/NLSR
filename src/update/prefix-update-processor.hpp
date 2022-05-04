@@ -60,13 +60,13 @@ public:
    * configuration file
    */
   bool
-  addOrDeletePrefix(const ndn::Name& prefix, bool addPrefix);
+  addOrDeletePrefix(const ndn::Name& prefix, bool isMulticast, bool addPrefix);
 
   ndn::optional<bool>
-  afterAdvertise(const ndn::Name& prefix);
+  afterAdvertise(const ndn::Name& prefix, bool isMulticast) override;
 
   ndn::optional<bool>
-  afterWithdraw(const ndn::Name& prefix);
+  afterWithdraw(const ndn::Name& prefix, bool isMulticast) override;
 
   /*! \brief Check if a prefix exists in the nlsr configuration file */
   bool
