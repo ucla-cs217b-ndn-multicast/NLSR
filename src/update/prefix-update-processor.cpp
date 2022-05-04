@@ -70,11 +70,23 @@ PrefixUpdateProcessor::PrefixUpdateProcessor(ndn::mgmt::Dispatcher& dispatcher,
                 this, _1),
     std::bind(&PrefixUpdateProcessor::advertiseAndInsertPrefix, this, _1, _2, _3, _4));
 
+  m_dispatcher.addControlCommand<ndn::nfd::ControlParameters>(
+      makeRelPrefix("advertise-mc"),
+      makeAuthorization(),
+      std::bind(&PrefixUpdateProcessor::validateParameters<AdvertiseMulticastPrefixCommand>, this, _1),
+      std::bind(&PrefixUpdateProcessor::advertiseAndInsertMulticastPrefix, this, _1, _2, _3, _4));
+
   m_dispatcher.addControlCommand<ndn::nfd::ControlParameters>(makeRelPrefix("withdraw"),
     makeAuthorization(),
     std::bind(&PrefixUpdateProcessor::validateParameters<WithdrawPrefixCommand>,
                 this, _1),
     std::bind(&PrefixUpdateProcessor::withdrawAndRemovePrefix, this, _1, _2, _3, _4));
+
+  m_dispatcher.addControlCommand<ndn::nfd::ControlParameters>(
+      makeRelPrefix("withdraw-mc"),
+      makeAuthorization(),
+      std::bind(&PrefixUpdateProcessor::validateParameters<WithdrawMulticastPrefixCommand>, this, _1),
+      std::bind(&PrefixUpdateProcessor::withdrawAndRemoveMulticastPrefix, this, _1, _2, _3, _4));
 }
 
 ndn::mgmt::Authorization

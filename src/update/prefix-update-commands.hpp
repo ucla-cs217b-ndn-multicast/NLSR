@@ -45,10 +45,22 @@ public:
   WithdrawPrefixCommand();
 };
 
+class WithdrawMulticastPrefixCommand : public ndn::nfd::ControlCommand
+{
+public:
+  WithdrawMulticastPrefixCommand();
+};
+
 class AdvertisePrefixCommand : public ndn::nfd::ControlCommand
 {
 public:
   AdvertisePrefixCommand();
+};
+
+class AdvertiseMulticastPrefixCommand : public ndn::nfd::ControlCommand
+{
+public:
+  AdvertiseMulticastPrefixCommand();
 };
 
 } // namespace update

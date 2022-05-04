@@ -34,6 +34,16 @@ WithdrawPrefixCommand::WithdrawPrefixCommand()
   m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
 }
 
+WithdrawMulticastPrefixCommand::WithdrawMulticastPrefixCommand()
+  : ControlCommand("nlsr", "withdraw-mc")
+{
+  m_requestValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+  m_responseValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+
+  m_requestValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+  m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+}
+
 AdvertisePrefixCommand::AdvertisePrefixCommand()
   : ControlCommand("nlsr", "advertise")
 {
@@ -43,6 +53,15 @@ AdvertisePrefixCommand::AdvertisePrefixCommand()
   m_requestValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
   m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
 
+}
+
+AdvertiseMulticastPrefixCommand::AdvertiseMulticastPrefixCommand()
+  : ControlCommand("nlsr", "advertise-mc") {
+  m_requestValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+  m_responseValidator.required(ndn::nfd::CONTROL_PARAMETER_NAME);
+
+  m_requestValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
+  m_responseValidator.optional(ndn::nfd::CONTROL_PARAMETER_FLAGS);
 }
 
 } // namespace update
