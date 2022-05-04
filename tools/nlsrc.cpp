@@ -85,10 +85,18 @@ Nlsrc::printUsage() const
            advertise a name prefix through NLSR
        advertise <name> save
            advertise and save the name prefix to the conf file
+       advertise-mc <name>
+           advertise a multicast name prefix through NLSR
+       advertise-mc <name> save
+           advertise and save the multicast name prefix to the conf file
        withdraw <name>
            remove a name prefix advertised through NLSR
        withdraw <name> delete
            withdraw and delete the name prefix from the conf file
+       withdraw <name>
+           remove a multicast name prefix advertised through NLSR
+       withdraw <name> delete
+           withdraw and delete the multicast name prefix from the conf file
 )EOT");
   boost::algorithm::replace_all(help, "@NLSRC@", m_programName);
   std::cout << help;
