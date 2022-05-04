@@ -181,6 +181,21 @@ Nlsrc::dispatch(ndn::span<std::string> subcommand)
     return false;
   }
 
+  if (subcommand[0] == "advertise-mc") {
+    switch (subcommand.size()) {
+      case 2:
+        advertiseMulticastName(subcommand[1], false);
+        return true;
+      case 3:
+        if (subcommand[2] != "save") {
+          return false;
+        }
+        advertiseMulticastName(subcommand[1], true);
+        return true;
+    }
+    return false;
+  }
+
   if (subcommand[0] == "withdraw") {
     switch (subcommand.size()) {
       case 2:
@@ -191,6 +206,21 @@ Nlsrc::dispatch(ndn::span<std::string> subcommand)
           return false;
         }
         withdrawName(subcommand[1], true);
+        return true;
+    }
+    return false;
+  }
+
+  if (subcommand[0] == "withdraw-mc") {
+    switch (subcommand.size()) {
+      case 2:
+        withdrawMulticastName(subcommand[1], false);
+        return true;
+      case 3:
+        if (subcommand[2] != "delete") {
+          return false;
+        }
+        withdrawMulticastName(subcommand[1], true);
         return true;
     }
     return false;
@@ -228,10 +258,26 @@ Nlsrc::advertiseName(ndn::Name name, bool wantSave)
 }
 
 void
+Nlsrc::advertiseMulticastName(ndn::Name name, bool wantSave)
+{
+  std::string info = (wantSave ? "(Save MC: " : "(Advertise MC: ") + name.toUri() + ")";
+  ndn::Name::Component verb("advertise-mc");
+  sendNamePrefixUpdate(name, verb, info, wantSave);
+}
+
+void
 Nlsrc::withdrawName(ndn::Name name, bool wantDelete)
 {
   std::string info = (wantDelete ? "(Delete: " : "(Withdraw: ") + name.toUri() + ")";
   ndn::Name::Component verb("withdraw");
+  sendNamePrefixUpdate(name, verb, info, wantDelete);
+}
+
+void
+Nlsrc::withdrawMulticastName(ndn::Name name, bool wantDelete)
+{
+  std::string info = (wantDelete ? "(Delete MC: " : "(Withdraw MC: ") + name.toUri() + ")";
+  ndn::Name::Component verb("withdraw-mc");
   sendNamePrefixUpdate(name, verb, info, wantDelete);
 }
 

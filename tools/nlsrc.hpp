@@ -82,6 +82,9 @@ private:
   void
   advertiseName(ndn::Name name, bool wantSave);
 
+  void
+  advertiseMulticastName(ndn::Name name, bool wantSave);
+
   /**
    * \brief Removes a name prefix from NLSR's Name LSA
    *
@@ -91,6 +94,8 @@ private:
    */
   void
   withdrawName(ndn::Name name, bool wantDelete);
+
+  void withdrawMulticastName(ndn::Name name, bool wantDelete);
 
   void
   sendNamePrefixUpdate(const ndn::Name& name,
