@@ -28,5 +28,10 @@
 __pycache__/
 *.py[cod]
 
+# Cscope databases
+cscope.in.out
+cscope.out
+cscope.po.out
+
 # Other
 /VERSION.info
