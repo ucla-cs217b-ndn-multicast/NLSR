@@ -118,7 +118,7 @@ public:
   virtual std::string
   toString() const = 0;
 
-  virtual std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>>
+  virtual std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>>
   update(const std::shared_ptr<Lsa>& lsa) = 0;
 
   virtual const ndn::Block&

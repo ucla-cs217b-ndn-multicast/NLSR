@@ -53,11 +53,15 @@ public:
     \param updateType Update type from Lsdb (INSTALLED, UPDATED, REMOVED)
     \param namesToAdd If LSA is UPDATED, then these are the names to add
     \param namesToRemove If LSA is UPDATED, then these are the names to remove
+    \param mcNamesToAdd If LSA is UPDATED, then these are the multicast names to add
+    \param mcNamesToRemove If LSA is UPDATED, then these are the multicast names to remove
    */
   void
   updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
                  const std::list<ndn::Name>& namesToAdd,
-                 const std::list<ndn::Name>& namesToRemove);
+                 const std::list<ndn::Name>& namesToRemove,
+                 const std::list<ndn::Name>& mcNamesToAdd,
+                 const std::list<ndn::Name>& mcNamesToRemove);
 
   /*! \brief Adds a destination to the specified name prefix.
     \param name The name prefix
@@ -73,7 +77,7 @@ public:
     notified of the change to the NPT entry, too.
    */
   void
-  addEntry(const ndn::Name& name, const ndn::Name& destRouter);
+  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast);
 
   /*! \brief Removes a destination from a name prefix table entry.
     \param name The name prefix
@@ -132,10 +136,17 @@ public:
   const_iterator
   end() const;
 
+  const_iterator
+  beginMulticast() const;
+
+  const_iterator
+  endMulticast() const;
+
 PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   RoutingTableEntryPool m_rtpool;
 
   NptEntryList m_table;
+  NptEntryList m_mcTable;
 
 private:
   const ndn::Name& m_ownRouterName;
@@ -155,6 +166,18 @@ inline NamePrefixTable::const_iterator
 NamePrefixTable::end() const
 {
   return m_table.end();
+}
+
+inline NamePrefixTable::const_iterator
+NamePrefixTable::beginMulticast() const
+{
+  return m_mcTable.begin();
+}
+
+inline NamePrefixTable::const_iterator
+NamePrefixTable::endMulticast() const
+{
+  return m_mcTable.end();
 }
 
 std::ostream&

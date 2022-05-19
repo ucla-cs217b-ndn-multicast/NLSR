@@ -43,7 +43,7 @@ Nlsr::Nlsr(ndn::Face& face, ndn::KeyChain& keyChain, ConfParameter& confParam)
   , m_namePrefixList(confParam.getNamePrefixList())
   , m_fib(m_face, m_scheduler, m_adjacencyList, m_confParam, keyChain)
   , m_lsdb(m_face, keyChain, m_confParam)
-  , m_routingTable(m_scheduler, m_lsdb, m_confParam)
+  , m_routingTable(m_scheduler, m_lsdb, m_namePrefixTable, m_confParam)
   , m_namePrefixTable(confParam.getRouterPrefix(), m_fib, m_routingTable,
                       m_routingTable.afterRoutingChange, m_lsdb.onLsdbModified)
   , m_helloProtocol(m_face, keyChain, confParam, m_routingTable, m_lsdb)

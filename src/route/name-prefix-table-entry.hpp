@@ -37,8 +37,9 @@ public:
   {
   }
 
-  NamePrefixTableEntry(const ndn::Name& namePrefix)
+  NamePrefixTableEntry(const ndn::Name& namePrefix, bool isMulticast)
     : m_namePrefix(namePrefix)
+    , m_isMulticast(isMulticast)
     , m_nexthopList()
   {
   }
@@ -47,6 +48,12 @@ public:
   getNamePrefix() const
   {
     return m_namePrefix;
+  }
+
+  bool
+  isMulticast() const
+  {
+    return m_isMulticast;
   }
 
   const std::list<std::shared_ptr<RoutingTablePoolEntry>>&
@@ -107,6 +114,7 @@ public:
 
 private:
   ndn::Name m_namePrefix;
+  bool m_isMulticast;
 
 PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   std::list<std::shared_ptr<RoutingTablePoolEntry>> m_rteList;

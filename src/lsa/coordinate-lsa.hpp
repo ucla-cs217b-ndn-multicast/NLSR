@@ -98,7 +98,7 @@ public:
   std::string
   toString() const override;
 
-  std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>>
+  std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>>
   update(const std::shared_ptr<Lsa>& lsa) override;
 
 private:

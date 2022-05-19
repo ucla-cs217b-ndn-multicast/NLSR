@@ -31,9 +31,10 @@ namespace nlsr {
 
 INIT_LOGGER(route.RoutingTable);
 
-RoutingTable::RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, ConfParameter& confParam)
+RoutingTable::RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, NamePrefixTable& npt, ConfParameter& confParam)
   : m_scheduler(scheduler)
   , m_lsdb(lsdb)
+  , m_npt(npt)
   , m_routingCalcInterval{confParam.getRoutingCalcInterval()}
   , m_isRoutingTableCalculating(false)
   , m_isRouteCalculationScheduled(false)
@@ -42,7 +43,7 @@ RoutingTable::RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, ConfParameter&
 {
   m_afterLsdbModified = lsdb.onLsdbModified.connect(
     [this] (std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
-            const auto& namesToAdd, const auto& namesToRemove) {
+            const auto& namesToAdd, const auto& namesToRemove, const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
       auto type = lsa->getType();
       bool updateForOwnAdjacencyLsa = lsa->getOriginRouter() == m_confParam.getRouterPrefix() &&
                                       type == Lsa::Type::ADJACENCY;

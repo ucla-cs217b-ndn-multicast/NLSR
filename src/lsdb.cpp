@@ -236,7 +236,7 @@ Lsdb::installLsa(std::shared_ptr<Lsa> lsa)
 
     m_lsdb.emplace(lsa);
 
-    onLsdbModified(lsa, LsdbUpdate::INSTALLED, {}, {});
+    onLsdbModified(lsa, LsdbUpdate::INSTALLED, {}, {}, {}, {});
 
     lsa->setExpiringEventId(scheduleLsaExpiration(lsa, timeToExpire));
   }
@@ -248,11 +248,11 @@ Lsdb::installLsa(std::shared_ptr<Lsa> lsa)
     chkLsa->setExpirationTimePoint(lsa->getExpirationTimePoint());
 
     bool updated;
-    std::list<ndn::Name> namesToAdd, namesToRemove;
-    std::tie(updated, namesToAdd, namesToRemove) = chkLsa->update(lsa);
+    std::list<ndn::Name> namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove;
+    std::tie(updated, namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove) = chkLsa->update(lsa);
 
     if (updated) {
-      onLsdbModified(lsa, LsdbUpdate::UPDATED, namesToAdd, namesToRemove);
+      onLsdbModified(lsa, LsdbUpdate::UPDATED, namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove);
     }
 
     chkLsa->setExpiringEventId(scheduleLsaExpiration(chkLsa, timeToExpire));
@@ -269,7 +269,7 @@ Lsdb::removeLsa(const LsaContainer::index<Lsdb::byName>::type::iterator& lsaIt)
     NLSR_LOG_DEBUG("Removing " << lsaPtr->getType() << " LSA:");
     NLSR_LOG_DEBUG(lsaPtr->toString());
     m_lsdb.erase(lsaIt);
-    onLsdbModified(lsaPtr, LsdbUpdate::REMOVED, {}, {});
+    onLsdbModified(lsaPtr, LsdbUpdate::REMOVED, {}, {}, {}, {});
   }
 }
 

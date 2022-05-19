@@ -101,7 +101,7 @@ void CommandManagerBase::advertiseAndInsertMulticastPrefix(const ndn::Name &pref
   // Only build a Name LSA if the added multicast name is new
   if (m_namePrefixList.insertMulticast(castParams.getName())) {
     NLSR_LOG_INFO("Advertising multicast name: " << castParams.getName() << "\n");
-    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
+    m_lsdb.buildAndInstallOwnNameLsa();
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       NLSR_LOG_INFO("Saving multicast name to the configuration file ");
       if (afterAdvertise(castParams.getName(), true) == true) {
@@ -182,7 +182,7 @@ void CommandManagerBase::withdrawAndRemoveMulticastPrefix(const ndn::Name &prefi
   // Only build a Name LSA if the removed name is not new
   if (m_namePrefixList.removeMulticast(castParams.getName())) {
     NLSR_LOG_INFO("Withdrawing/Removing multicast name: " << castParams.getName() << "\n");
-    m_lsdb.buildAndInstallOwnNameLsa(); // TODO: Make this multicast-aware
+    m_lsdb.buildAndInstallOwnNameLsa();
     if (castParams.hasFlags() && castParams.getFlags() == PREFIX_FLAG) {
       if (afterWithdraw(castParams.getName(), true) == true) {
         return done(ndn::nfd::ControlResponse(205, "OK").setBody(parameters.wireEncode()));

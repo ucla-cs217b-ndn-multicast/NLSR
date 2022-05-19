@@ -154,7 +154,7 @@ CoordinateLsa::toString() const
   return os.str();
 }
 
-std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>>
+std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>>
 CoordinateLsa::update(const std::shared_ptr<Lsa>& lsa)
 {
   auto clsa = std::static_pointer_cast<CoordinateLsa>(lsa);
@@ -164,9 +164,11 @@ CoordinateLsa::update(const std::shared_ptr<Lsa>& lsa)
     for (const auto& angle : clsa->getCorTheta()) {
       m_hyperbolicAngles.push_back(angle);
     }
-    return std::make_tuple(true, std::list<ndn::Name>{}, std::list<ndn::Name>{});
+    return std::make_tuple(true, std::list<ndn::Name>{}, std::list<ndn::Name>{}, std::list<ndn::Name>{},
+                           std::list<ndn::Name>{});
   }
-  return std::make_tuple(false, std::list<ndn::Name>{}, std::list<ndn::Name>{});
+  return std::make_tuple(false, std::list<ndn::Name>{}, std::list<ndn::Name>{}, std::list<ndn::Name>{},
+                         std::list<ndn::Name>{});
 }
 
 std::ostream&

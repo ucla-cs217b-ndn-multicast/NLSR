@@ -44,12 +44,29 @@ size_t
 NameLsa::wireEncode(ndn::EncodingImpl<TAG>& block) const
 {
   size_t totalLength = 0;
+  size_t namesLength = 0;
+  size_t multicastNamesLength = 0;
+
+  // TODO: Should codec functions be in NamePrefixList?
+  auto multicastNames = m_npl.getMulticastNames();
+
+  for (auto it = multicastNames.rbegin(); it != multicastNames.rend(); ++it) {
+    multicastNamesLength += it->wireEncode(block);
+  }
+
+  totalLength += multicastNamesLength;
+  totalLength += block.prependVarNumber(multicastNamesLength);
+  totalLength += block.prependVarNumber(129);
 
   auto names = m_npl.getNames();
 
   for (auto it = names.rbegin();  it != names.rend(); ++it) {
-    totalLength += it->wireEncode(block);
+    namesLength += it->wireEncode(block);
   }
+
+  totalLength += namesLength;
+  totalLength += block.prependVarNumber(namesLength);
+  totalLength += block.prependVarNumber(129); // TODO: Set appropriate TLV type
 
   totalLength += Lsa::wireEncode(block);
 
@@ -101,14 +118,51 @@ NameLsa::wireDecode(const ndn::Block& wire)
   }
 
   NamePrefixList npl;
-  for (; val != m_wire.elements_end(); ++val) {
-    if (val->type() == ndn::tlv::Name) {
-      npl.insert(ndn::Name(*val));
-    }
-    else {
-      NDN_THROW(Error("Name", val->type()));
+
+  ++val;
+
+  // Decode names from name prefix list
+  if (val != m_wire.elements_end() && val->type() == 129) { // TODO: Set appropriate TLV type
+    ndn::Block baseWire = *val;
+    baseWire.parse();
+
+    auto nameVal = baseWire.elements_begin();
+
+    for (; nameVal != baseWire.elements_end(); ++nameVal) {
+      if (nameVal->type() == ndn::tlv::Name) {
+        npl.insert(ndn::Name(*nameVal));
+      }
+      else {
+        NDN_THROW(Error("Name", nameVal->type()));
+      }
     }
   }
+  else {
+    NDN_THROW(Error("Missing required NamePrefixList field"));
+  }
+
+  ++val;
+
+  // Decode multicast names from name prefix list
+  if (val != m_wire.elements_end() && val->type() == 129) { // TODO: Set appropriate TLV type
+    ndn::Block baseWire = *val;
+    baseWire.parse();
+
+    auto nameVal = baseWire.elements_begin();
+
+    for (; nameVal != baseWire.elements_end(); ++nameVal) {
+      if (nameVal->type() == ndn::tlv::Name) {
+        npl.insertMulticast(ndn::Name(*nameVal));
+      }
+      else {
+        NDN_THROW(Error("Name", nameVal->type()));
+      }
+    }
+  }
+  else {
+    NDN_THROW(Error("Missing required NamePrefixList field"));
+  }
+
   m_npl = npl;
 }
 
@@ -132,7 +186,7 @@ NameLsa::toString() const
   return os.str();
 }
 
-std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>>
+std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>>
 NameLsa::update(const std::shared_ptr<Lsa>& lsa)
 {
   auto nlsa = std::static_pointer_cast<NameLsa>(lsa);
@@ -153,6 +207,16 @@ NameLsa::update(const std::shared_ptr<Lsa>& lsa)
     updated = true;
   }
 
+  std::list<ndn::Name> newMcNames = nlsa->getNpl().getMulticastNames();
+  std::list<ndn::Name> oldMcNames = m_npl.getMulticastNames();
+  std::list<ndn::Name> mcNamesToAdd;
+  std::set_difference(newMcNames.begin(), newMcNames.end(), oldMcNames.begin(), oldMcNames.end(),
+                      std::inserter(mcNamesToAdd, mcNamesToAdd.begin()));
+  for (const auto& name : mcNamesToAdd) {
+    addMulticastName(name);
+    updated = true;
+  }
+
   m_npl.sort();
 
   // Also remove any names that are no longer being advertised.
@@ -164,7 +228,15 @@ NameLsa::update(const std::shared_ptr<Lsa>& lsa)
     updated = true;
   }
 
-  return std::make_tuple(updated, namesToAdd, namesToRemove);
+  std::list<ndn::Name> mcNamesToRemove;
+  std::set_difference(oldMcNames.begin(), oldMcNames.end(), newMcNames.begin(), newMcNames.end(),
+                      std::inserter(mcNamesToRemove, mcNamesToRemove.begin()));
+  for (const auto& name : mcNamesToRemove) {
+    removeMulticastName(name);
+    updated = true;
+  }
+
+  return std::make_tuple(updated, namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove);
 }
 
 std::ostream&

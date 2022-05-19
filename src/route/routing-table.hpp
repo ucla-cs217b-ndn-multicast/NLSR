@@ -90,7 +90,7 @@ class RoutingTable : public RoutingTableStatus
 {
 public:
   explicit
-  RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, ConfParameter& confParam);
+  RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, NamePrefixTable& npt, ConfParameter& confParam);
 
   ~RoutingTable()
   {
@@ -127,6 +127,12 @@ public:
   void
   scheduleRoutingTableCalculation();
 
+  NamePrefixTable&
+  getNamePrefixTable()
+  {
+    return m_npt;
+  }
+
 private:
   /*! \brief Calculates a link-state routing table. */
   void
@@ -148,6 +154,7 @@ public:
 private:
   ndn::Scheduler& m_scheduler;
   Lsdb& m_lsdb;
+  NamePrefixTable& m_npt;
 
 PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   ndn::time::seconds m_routingCalcInterval;

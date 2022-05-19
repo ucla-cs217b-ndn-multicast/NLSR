@@ -76,7 +76,12 @@ NamePrefixList::getSource(const std::string& source, std::vector<NamePair>::iter
 bool
 NamePrefixList::insert(const ndn::Name& name, const std::string& source)
 {
-  auto pairItr = get(name);
+  auto pairItr = getMulticast(name);
+  if (pairItr != m_mcNames.end()) {
+    return false;
+  }
+
+  pairItr = get(name);
   if (pairItr == m_names.end()) {
     std::vector<std::string> sources{source};
     m_names.push_back(std::tie(name, sources));
@@ -96,7 +101,12 @@ NamePrefixList::insert(const ndn::Name& name, const std::string& source)
 bool
 NamePrefixList::insertMulticast(const ndn::Name& name, const std::string& source)
 {
-  auto pairItr = getMulticast(name);
+  auto pairItr = get(name);
+  if (pairItr != m_names.end()) {
+    return false;
+  }
+
+  pairItr = getMulticast(name);
   if (pairItr == m_mcNames.end()) {
     std::vector<std::string> sources{source};
     m_mcNames.push_back(std::tie(name, sources));

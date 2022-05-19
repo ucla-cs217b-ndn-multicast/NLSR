@@ -251,7 +251,7 @@ LinkStateRoutingTableCalculator::calculatePath(Map& pMap, RoutingTable& rt,
     // Inform the routing table of the new next hops.
     addAllLsNextHopsToRoutingTable(confParam.getAdjacencyList(), rt, pMap, *sourceRouter);
   }
-  else {
+  else { // TODO: Check why this does not check for sourceRouter but accesses it
     // Multi Path
     setNoLink(getNumOfLinkfromAdjMatrix(*sourceRouter));
     allocateLinks();

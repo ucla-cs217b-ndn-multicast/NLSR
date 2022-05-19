@@ -81,6 +81,20 @@ public:
     m_npl.remove(name);
   }
 
+  void
+  addMulticastName(const ndn::Name& name)
+  {
+    m_wire.reset();
+    m_npl.insertMulticast(name);
+  }
+
+  void
+  removeMulticastName(const ndn::Name& name)
+  {
+    m_wire.reset();
+    m_npl.removeMulticast(name);
+  }
+
   bool
   isEqualContent(const NameLsa& other) const;
 
@@ -97,7 +111,7 @@ public:
   std::string
   toString() const override;
 
-  std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>>
+  std::tuple<bool, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>, std::list<ndn::Name>>
   update(const std::shared_ptr<Lsa>& lsa) override;
 
 private:
