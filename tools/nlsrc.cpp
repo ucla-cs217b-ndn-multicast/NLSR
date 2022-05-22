@@ -93,9 +93,9 @@ Nlsrc::printUsage() const
            remove a name prefix advertised through NLSR
        withdraw <name> delete
            withdraw and delete the name prefix from the conf file
-       withdraw <name>
+       withdraw-mc <name>
            remove a multicast name prefix advertised through NLSR
-       withdraw <name> delete
+       withdraw-mc <name> delete
            withdraw and delete the multicast name prefix from the conf file
 )EOT");
   boost::algorithm::replace_all(help, "@NLSRC@", m_programName);
