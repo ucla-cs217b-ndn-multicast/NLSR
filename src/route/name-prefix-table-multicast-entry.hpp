@@ -48,7 +48,7 @@ public:
     return m_nexthopList;
   }
 
-  const NexthopList&
+  const std::set<ndn::Name>&
   getMemberRouters() const
   {
     return m_memberRouters; 
