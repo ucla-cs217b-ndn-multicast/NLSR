@@ -23,6 +23,7 @@
 #define NLSR_NAME_PREFIX_TABLE_HPP
 
 #include "name-prefix-table-entry.hpp"
+#include "name-prefix-table-multicast-entry.hpp"
 #include "routing-table-pool-entry.hpp"
 #include "signals.hpp"
 #include "test-access-control.hpp"
@@ -40,6 +41,7 @@ public:
   using RoutingTableEntryPool =
     std::unordered_map<ndn::Name, std::shared_ptr<RoutingTablePoolEntry>>;
   using NptEntryList = std::list<std::shared_ptr<NamePrefixTableEntry>>;
+  using NptMcastEntryList = std::list<std::shared_ptr<NamePrefixTableMulticastEntry>>; 
   using const_iterator = NptEntryList::const_iterator;
 
   NamePrefixTable(const ndn::Name& ownRouterName, Fib& fib, RoutingTable& routingTable,
@@ -76,6 +78,19 @@ public:
     a match, it will instantiate it with no next hops. The FIB will be
     notified of the change to the NPT entry, too.
    */
+  void
+  addEntry(const ndn::Name& name, const ndn::Name& destRouter)
+  {
+    addEntry(name, destRouter, false); 
+  }
+
+  void
+  addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter)
+  {
+    addEntry(name, destRouter, true); 
+  }
+
+  // TODO: Deprecate (privatize) this
   void
   addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast);
 
@@ -146,7 +161,7 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   RoutingTableEntryPool m_rtpool;
 
   NptEntryList m_table;
-  NptEntryList m_mcTable;
+  NptMcastEntryList m_mcTable; 
 
 private:
   const ndn::Name& m_ownRouterName;
