@@ -43,7 +43,8 @@ RoutingTable::RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, NamePrefixTabl
 {
   m_afterLsdbModified = lsdb.onLsdbModified.connect(
     [this] (std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
-            const auto& namesToAdd, const auto& namesToRemove, const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
+            const auto& namesToAdd, const auto& namesToRemove, 
+            const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
       auto type = lsa->getType();
       bool updateForOwnAdjacencyLsa = lsa->getOriginRouter() == m_confParam.getRouterPrefix() &&
                                       type == Lsa::Type::ADJACENCY;
@@ -67,7 +68,7 @@ RoutingTable::RoutingTable(ndn::Scheduler& scheduler, Lsdb& lsdb, NamePrefixTabl
         m_ownAdjLsaExist = true;
       }
 
-      // Don;t do anything on removal, wait for HelloProtocol to confirm and then react
+      // Don't do anything on removal, wait for HelloProtocol to confirm and then react
       if (updateType == LsdbUpdate::INSTALLED || updateType == LsdbUpdate::UPDATED) {
         if ((type == Lsa::Type::ADJACENCY  && m_hyperbolicState != HYPERBOLIC_STATE_ON) ||
             (type == Lsa::Type::COORDINATE && m_hyperbolicState != HYPERBOLIC_STATE_OFF)) {

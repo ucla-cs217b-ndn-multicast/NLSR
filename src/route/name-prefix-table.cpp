@@ -48,7 +48,8 @@ NamePrefixTable::NamePrefixTable(const ndn::Name& ownRouterName, Fib& fib,
 
   m_afterLsdbModified = afterLsdbModifiedSignal.connect(
     [this] (std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
-            const auto& namesToAdd, const auto& namesToRemove, const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
+            const auto& namesToAdd, const auto& namesToRemove, 
+            const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
       updateFromLsdb(lsa, updateType, namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove);
     }
   );
@@ -210,7 +211,8 @@ NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bo
   }
   else {
     npte = *nameItr;
-    // TODO: Perform check if existing entry is multicast and compare with isMulticast; define behavior for mismatch
+    // TODO: Perform check if existing entry is multicast and compare with
+    // isMulticast; define behavior for mismatch
     NLSR_LOG_TRACE("Adding origin: " << rtpePtr->getDestination() <<
                    " to existing prefix: " << **nameItr);
     (*nameItr)->addRoutingTableEntry(rtpePtr);
