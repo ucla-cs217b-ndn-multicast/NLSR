@@ -28,5 +28,9 @@
 __pycache__/
 *.py[cod]
 
+cscope.in.out
+cscope.out
+cscope.po.out
+
 # Other
 /VERSION.info
