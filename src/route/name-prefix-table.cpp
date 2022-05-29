@@ -120,7 +120,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
       }
     }
   }
-  else {
+  else if (updateType == LsdbUpdate::REMOVED) {
     removeEntry(lsa->getOriginRouter(), lsa->getOriginRouter());
     if (lsa->getType() == Lsa::Type::NAME) {
       auto nlsa = std::static_pointer_cast<NameLsa>(lsa);
@@ -136,6 +136,9 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
         }
       }
     }
+  }
+  else { 
+    NLSR_LOG_DEBUG("Got unknown LSA type from router: " << lsa->getOriginRouter());
   }
 }
 
