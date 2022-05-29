@@ -143,6 +143,47 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 }
 
 void
+NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter)
+{
+  auto nameItr = std::find_if(m_mcGroups.begin(), m_mcGroups.end(),
+      [&] (const std::shared_ptr<NptMulticastGroup>& grp) { 
+        return grp->namePrefix == name; 
+      }); 
+
+  std::shared_ptr<NptMulticastGroup> group; 
+  bool requireTreeRebuild = false; 
+
+  if (nameItr == m_mcGroups.end()) { // No existing group 
+    auto newGroup = std::make_shared<NptMulticastGroup>(name); 
+    newGroup->memberRouters.insert(destRouter); 
+    m_mcGroups.insert(newGroup); 
+
+    group = newGroup; 
+    requireTreeRebuild = true; 
+  } 
+  else { // Existing group found
+    group = *nameItr; 
+    if (!(group->memberRouters.contains(name))) { 
+      group->memberRouters.insert(destRouter); 
+      requireTreeRebuild = true; 
+    }
+  }
+
+  if (requireTreeRebuild) { 
+    rebuildMcastTree(group); 
+  }
+}
+
+void 
+NamePrefixTable::rebuildMcastTree(const NptMulticastGroup& prefix)
+{
+  m_routingTable.getMcastRoutingNexthopList(); 
+  // TODO: Call the routing table method here!
+  // It should take an NptMulticastGroup and either return next hops
+  // (or just augment the NptMulticastGroup struct with next hops). 
+}
+
+void
 NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast)
 {
   // Check if the advertised name prefix is in the table already.
