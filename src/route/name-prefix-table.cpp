@@ -170,12 +170,12 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& destR
   }
 
   if (requireTreeRebuild) { 
-    rebuildMcastTree(group); 
+    rebuildMulticastTree(group); 
   }
 }
 
 void 
-NamePrefixTable::rebuildMcastTree(const NamePrefixTableMulticastEntry& prefix)
+NamePrefixTable::rebuildMulticastTree(const NamePrefixTableMulticastEntry& prefix)
 {
   m_routingTable.getMcastRoutingNexthopList(); 
   // TODO: Call the routing table method here!
@@ -384,6 +384,12 @@ NamePrefixTable::updateWithNewRoute(const std::list<RoutingTableEntry>& entries)
       NLSR_LOG_TRACE("No change in routing entry:" << poolEntry->getDestination()
                  << ", no action necessary.");
     }
+  }
+
+  // Unconditionally rebuild all multicast trees; it's easier than calculating
+  // how a given router going down/up will affect a set of multicast trees. 
+  for (const auto& entry : m_mcTable) { 
+    rebuildMulticastTree(*entry); 
   }
 }
 
