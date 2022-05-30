@@ -43,8 +43,8 @@ operator<<(std::ostream& os, const NamePrefixTableMulticastEntry& entry)
 {
   os << "Name: " << entry.getNamePrefix() << "\n";
 
-  for (const auto& members : entry.getMemberRouters()) {
-    os << "  Member: " << entryPtr->getDestination() << "\n";
+  for (const auto& destination : entry.getMemberRouters()) {
+    os << "  Member: " << destination << "\n";
   }
 
   os << entry.getNexthopList(); 
