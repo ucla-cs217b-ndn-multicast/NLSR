@@ -119,8 +119,6 @@ NameLsa::wireDecode(const ndn::Block& wire)
 
   NamePrefixList npl;
 
-  ++val;
-
   // Decode names from name prefix list
   if (val != m_wire.elements_end() && val->type() == 129) { // TODO: Set appropriate TLV type
     ndn::Block baseWire = *val;
@@ -138,7 +136,7 @@ NameLsa::wireDecode(const ndn::Block& wire)
     }
   }
   else {
-    NDN_THROW(Error("Missing required NamePrefixList field"));
+    NDN_THROW(Error("Missing required NamePrefixList field for names"));
   }
 
   ++val;
@@ -160,7 +158,7 @@ NameLsa::wireDecode(const ndn::Block& wire)
     }
   }
   else {
-    NDN_THROW(Error("Missing required NamePrefixList field"));
+    NDN_THROW(Error("Missing required NamePrefixList field for multicast names"));
   }
 
   m_npl = npl;

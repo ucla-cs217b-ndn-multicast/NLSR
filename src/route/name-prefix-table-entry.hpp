@@ -37,6 +37,11 @@ public:
   {
   }
 
+  NamePrefixTableEntry(const ndn::Name& namePrefix)
+      : NamePrefixTableEntry(namePrefix, false)
+  {
+  }
+
   NamePrefixTableEntry(const ndn::Name& namePrefix, bool isMulticast)
     : m_namePrefix(namePrefix)
     , m_isMulticast(isMulticast)

@@ -39,7 +39,7 @@ public:
     , confProcessor(conf)
     , lsdb(face, m_keyChain, conf)
     , fib(face, m_scheduler, conf.getAdjacencyList(), conf, m_keyChain)
-    , rt(m_scheduler, lsdb, conf)
+    , rt(m_scheduler, lsdb, npt, conf)
     , npt(conf.getRouterPrefix(), fib, rt, rt.afterRoutingChange, lsdb.onLsdbModified)
   {
   }
@@ -328,7 +328,7 @@ BOOST_FIXTURE_TEST_CASE(UpdateFromLsdb, NamePrefixTableFixture)
   std::shared_ptr<Lsa> lsaPtr = std::make_shared<NameLsa>(nlsa1);
 
   BOOST_CHECK(npt.begin() == npt.end());
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 3); // Router + 2 names
 
   BOOST_CHECK(isNameInNpt(n1));
@@ -338,14 +338,14 @@ BOOST_FIXTURE_TEST_CASE(UpdateFromLsdb, NamePrefixTableFixture)
   auto nlsa = std::static_pointer_cast<NameLsa>(lsaPtr);
   nlsa->removeName(n2);
   nlsa->addName(n3);
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::UPDATED, {n3}, {n2});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::UPDATED, {n3}, {n2}, {}, {});
   BOOST_CHECK(isNameInNpt(n1));
   BOOST_CHECK(!isNameInNpt(n2)); // Removed
   BOOST_CHECK(isNameInNpt(n3));
 
   BOOST_CHECK_EQUAL(npt.m_table.size(), 3); // Still router + 2 names
 
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 0);
 
   // Adj and Coordinate LSAs router
@@ -353,22 +353,22 @@ BOOST_FIXTURE_TEST_CASE(UpdateFromLsdb, NamePrefixTableFixture)
   AdjLsa adjLsa(router2, 12, testTimePoint, 2, conf.getAdjacencyList());
   lsaPtr = std::make_shared<AdjLsa>(adjLsa);
   BOOST_CHECK(npt.begin() == npt.end());
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 1);
   BOOST_CHECK(isNameInNpt(router2));
 
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 0);
 
   ndn::Name router3("/router3/3");
   CoordinateLsa corLsa(router3, 12, testTimePoint, 2, {3});
   lsaPtr = std::make_shared<CoordinateLsa>(corLsa);
   BOOST_CHECK(npt.begin() == npt.end());
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::INSTALLED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 1);
   BOOST_CHECK(isNameInNpt(router3));
 
-  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {});
+  npt.updateFromLsdb(lsaPtr, LsdbUpdate::REMOVED, {}, {}, {}, {});
   BOOST_CHECK_EQUAL(npt.m_table.size(), 0);
 }
 
