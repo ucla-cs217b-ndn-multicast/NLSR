@@ -86,7 +86,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 
       for (const auto& name : nlsa->getNpl().getMulticastNames()) {
         if (name != m_ownRouterName) {
-          addEntry(name, lsa->getOriginRouter(), true);
+          addMulticastEntry(name, lsa->getOriginRouter());
         }
       }
     }
@@ -104,7 +104,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 
     for (const auto& name : mcNamesToAdd) {
       if (name != m_ownRouterName) {
-        addEntry(name, lsa->getOriginRouter(), true);
+        addMulticastEntry(name, lsa->getOriginRouter());
       }
     }
 
@@ -116,7 +116,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 
     for (const auto& name : mcNamesToRemove) {
       if (name != m_ownRouterName) {
-        removeEntry(name, lsa->getOriginRouter());
+        removeMulticastEntry(name, lsa->getOriginRouter());
       }
     }
   }
@@ -132,7 +132,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 
       for (const auto& name : nlsa->getNpl().getMulticastNames()) {
         if (name != m_ownRouterName) {
-          removeEntry(name, lsa->getOriginRouter());
+          removeMulticastEntry(name, lsa->getOriginRouter());
         }
       }
     }
