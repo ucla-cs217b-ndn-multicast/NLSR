@@ -183,18 +183,6 @@ NamePrefixTable::end() const
   return m_table.end();
 }
 
-inline NamePrefixTable::const_iterator
-NamePrefixTable::beginMulticast() const
-{
-  return m_mcTable.begin();
-}
-
-inline NamePrefixTable::const_iterator
-NamePrefixTable::endMulticast() const
-{
-  return m_mcTable.end();
-}
-
 std::ostream&
 operator<<(std::ostream& os, const NamePrefixTable& table);
 
