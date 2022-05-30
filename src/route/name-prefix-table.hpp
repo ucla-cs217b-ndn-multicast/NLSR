@@ -85,10 +85,7 @@ public:
   }
 
   void
-  addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter)
-  {
-    addEntry(name, destRouter, true); 
-  }
+  addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter); 
 
   // TODO: Deprecate (privatize) this
   void

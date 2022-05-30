@@ -145,26 +145,26 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 void
 NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter)
 {
-  auto nameItr = std::find_if(m_mcGroups.begin(), m_mcGroups.end(),
-      [&] (const std::shared_ptr<NptMulticastGroup>& grp) { 
-        return grp->namePrefix == name; 
+  auto nameItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
+      [&] (const std::shared_ptr<NamePrefixTableMulticastEntry>& grp) { 
+        return grp->getNamePrefix() == name; 
       }); 
 
-  std::shared_ptr<NptMulticastGroup> group; 
+  std::shared_ptr<NamePrefixTableMulticastEntry> group; 
   bool requireTreeRebuild = false; 
 
-  if (nameItr == m_mcGroups.end()) { // No existing group 
-    auto newGroup = std::make_shared<NptMulticastGroup>(name); 
-    newGroup->memberRouters.insert(destRouter); 
-    m_mcGroups.insert(newGroup); 
+  if (nameItr == m_mcTable.end()) { // No existing group 
+    auto newGroup = std::make_shared<NamePrefixTableMulticastEntry>(name); 
+    newGroup->addMemberRouter(destRouter); 
+    m_mcTable.push_back(newGroup); 
 
     group = newGroup; 
     requireTreeRebuild = true; 
   } 
   else { // Existing group found
     group = *nameItr; 
-    if (!(group->memberRouters.contains(name))) { 
-      group->memberRouters.insert(destRouter); 
+    if (!(group->containsMemberRouter(name))) { 
+      group->addMemberRouter(destRouter); 
       requireTreeRebuild = true; 
     }
   }
@@ -175,12 +175,12 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& destR
 }
 
 void 
-NamePrefixTable::rebuildMcastTree(const NptMulticastGroup& prefix)
+NamePrefixTable::rebuildMcastTree(const NamePrefixTableMulticastEntry& prefix)
 {
   m_routingTable.getMcastRoutingNexthopList(); 
   // TODO: Call the routing table method here!
-  // It should take an NptMulticastGroup and either return next hops
-  // (or just augment the NptMulticastGroup struct with next hops). 
+  // It should take an NamePrefixTableMulticastEntry and either return next hops
+  // (or just augment the NamePrefixTableMulticastEntry struct with next hops). 
 }
 
 void
