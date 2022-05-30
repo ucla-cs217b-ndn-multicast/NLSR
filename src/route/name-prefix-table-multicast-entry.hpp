@@ -48,10 +48,29 @@ public:
     return m_nexthopList;
   }
 
+  // TODO: Maybe I should learn how C++ iterators work someday...
   const std::set<ndn::Name>&
   getMemberRouters() const
   {
     return m_memberRouters; 
+  }
+
+  void
+  addMemberRouter(const ndn::Name& name)
+  {
+    m_memberRouters.insert(name); 
+  }
+
+  void
+  removeMemberRouter(const ndn::Name& name)
+  {
+    m_memberRouters.insert(name); 
+  }
+
+  bool
+  containsMemberRouter(const ndn::Name& name) const
+  {
+    return m_memberRouters.find(name) != m_memberRouters.end(); 
   }
 
 private: 
