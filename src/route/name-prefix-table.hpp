@@ -143,7 +143,7 @@ public:
   deleteRtpeFromPool(std::shared_ptr<RoutingTablePoolEntry> rtpePtr);
 
   void
-  rebuildMulticastTree(const NamePrefixTableMulticastEntry& group); 
+  rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEntry> group); 
 
   void
   writeLog();

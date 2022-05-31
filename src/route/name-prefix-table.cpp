@@ -182,9 +182,6 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& me
         return grp->getNamePrefix() == name;
       });
 
-  std::shared_ptr<NamePrefixTableMulticastEntry> group;
-  bool requireTreeRebuild = false;
-
   if (nameItr == m_mcTable.end()) {
     NLSR_LOG_DEBUG("Router " << memberRouter
         << " leaving unknown multicast group:" << name << ".\n");
@@ -203,7 +200,7 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& me
 }
 
 void
-NamePrefixTable::rebuildMulticastTree(const NamePrefixTableMulticastEntry& group)
+NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEntry> group) 
 {
   /* m_routingTable.getMcastRoutingNexthopList();
   // TODO: Call the routing table method here!
@@ -370,11 +367,6 @@ NamePrefixTable::removeEntry(const ndn::Name& name, const ndn::Name& destRouter)
       NLSR_LOG_TRACE(**nameItr << " has no routing table entries;"
                  << " removing from table and FIB");
       m_table.erase(nameItr);
-
-      if ((*nameItr)->isMulticast()) {
-        m_mcTable.erase(nameItr);
-      }
-
       m_fib.remove(name);
     }
     else {
@@ -429,7 +421,7 @@ NamePrefixTable::updateWithNewRoute(const std::list<RoutingTableEntry>& entries)
   // Unconditionally rebuild all multicast trees; it's easier than calculating
   // how a given router going down/up will affect a set of multicast trees.
   for (const auto& entry : m_mcTable) {
-    rebuildMulticastTree(*entry);
+    rebuildMulticastTree(entry);
   }
 }
 
