@@ -177,18 +177,18 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
 void
 NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter)
 {
-  auto nameItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
+  auto groupItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
       [&] (const std::shared_ptr<NamePrefixTableMulticastEntry>& grp) {
         return grp->getNamePrefix() == name;
       });
 
-  if (nameItr == m_mcTable.end()) {
+  if (groupItr == m_mcTable.end()) {
     NLSR_LOG_DEBUG("Router " << memberRouter
         << " leaving unknown multicast group:" << name << ".\n");
     return;
   }
 
-  auto group = *nameItr;
+  auto group = *groupItr;
   if (!group->containsMemberRouter(memberRouter)) {
     NLSR_LOG_DEBUG("Router " << memberRouter
         << " leaving a group it wasn't a member of: " << name << ".\n");
@@ -197,6 +197,9 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& me
 
   group->removeMemberRouter(memberRouter); 
   rebuildMulticastTree(group);
+  if (group->getMemberRouters().size() == 0) { 
+    m_mcTable.erase(groupItr); 
+  }
 }
 
 void
