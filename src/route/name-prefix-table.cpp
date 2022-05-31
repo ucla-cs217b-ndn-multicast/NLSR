@@ -22,6 +22,7 @@
 #include "name-prefix-table.hpp"
 
 #include "logger.hpp"
+#include "nexthop.hpp"
 #include "nlsr.hpp"
 #include "routing-table.hpp"
 
@@ -205,26 +206,21 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& me
 void
 NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEntry> group) 
 {
-  /* m_routingTable.getMcastRoutingNexthopList();
-  // TODO: Call the routing table method here!
-  // It should take an NamePrefixTableMulticastEntry and either return next hops
-  // (or just augment the NamePrefixTableMulticastEntry struct with next hops).
+  // Ask the routing table to generate a NextHopList based on a multicast
+  // distribution tree. 
+  auto nextHopList = m_routingTable.getMulticastNexthopList(
+      group->getMemberRouters());
 
-  // TODO: Adapt the below code.
-  if (npte->getNexthopList().size() > 0) {
-    NLSR_LOG_TRACE("Updating FIB with next hops for " << npte->getNamePrefix());
-    m_fib.update(name, npte->getNexthopList());
+  if (nextHopList.size() > 0) {
+    NLSR_LOG_TRACE("Updating FIB with next hops for multicast prefix " 
+        << group->getNamePrefix()); 
+    m_fib.update(name, nextHopList); 
   }
-  // The routing table may recalculate and add a routing table entry
-  // with no next hops to replace an existing routing table entry. In
-  // this case, the name prefix is no longer reachable through a next
-  // hop and should be removed from the FIB. But, the prefix should
-  // remain in the Name Prefix Table as a future routing table
-  // calculation may add next hops.
   else {
-    NLSR_LOG_TRACE(npte->getNamePrefix() << " has no next hops; removing from FIB");
+    NLSR_LOG_TRACE("Multicast prefix " << group->getNamePrefix() 
+        << " has no next hops; removing from FIB");
     m_fib.remove(name);
-  } */
+  }
 }
 
 void

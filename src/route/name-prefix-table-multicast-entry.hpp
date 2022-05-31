@@ -42,17 +42,17 @@ public:
     return m_namePrefix;
   }
 
-  const NexthopList&
-  getNexthopList() const
-  {
-    return m_nexthopList;
-  }
-
   // TODO: Maybe I should learn how C++ iterators work someday...
   const std::set<ndn::Name>&
   getMemberRouters() const
   {
     return m_memberRouters; 
+  }
+
+  size_t
+  size() const
+  {
+    return m_memberRouters.size(); 
   }
 
   void
