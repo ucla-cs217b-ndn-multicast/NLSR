@@ -48,7 +48,7 @@ NamePrefixTable::NamePrefixTable(const ndn::Name& ownRouterName, Fib& fib,
 
   m_afterLsdbModified = afterLsdbModifiedSignal.connect(
     [this] (std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
-            const auto& namesToAdd, const auto& namesToRemove, 
+            const auto& namesToAdd, const auto& namesToRemove,
             const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
       updateFromLsdb(lsa, updateType, namesToAdd, namesToRemove, mcNamesToAdd, mcNamesToRemove);
     }
@@ -137,50 +137,94 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
       }
     }
   }
-  else { 
+  else {
     NLSR_LOG_DEBUG("Got unknown LSA type from router: " << lsa->getOriginRouter());
   }
 }
 
 void
-NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter)
+NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter)
 {
   auto nameItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
-      [&] (const std::shared_ptr<NamePrefixTableMulticastEntry>& grp) { 
-        return grp->getNamePrefix() == name; 
-      }); 
+      [&] (const std::shared_ptr<NamePrefixTableMulticastEntry>& grp) {
+        return grp->getNamePrefix() == name;
+      });
 
-  std::shared_ptr<NamePrefixTableMulticastEntry> group; 
-  bool requireTreeRebuild = false; 
+  std::shared_ptr<NamePrefixTableMulticastEntry> group;
+  bool requireTreeRebuild = false;
 
-  if (nameItr == m_mcTable.end()) { // No existing group 
-    auto newGroup = std::make_shared<NamePrefixTableMulticastEntry>(name); 
-    newGroup->addMemberRouter(destRouter); 
-    m_mcTable.push_back(newGroup); 
+  if (nameItr == m_mcTable.end()) { // No existing group
+    auto newGroup = std::make_shared<NamePrefixTableMulticastEntry>(name);
+    newGroup->addMemberRouter(memberRouter);
+    m_mcTable.push_back(newGroup);
 
-    group = newGroup; 
-    requireTreeRebuild = true; 
-  } 
+    group = newGroup;
+    requireTreeRebuild = true;
+  }
   else { // Existing group found
-    group = *nameItr; 
-    if (!(group->containsMemberRouter(name))) { 
-      group->addMemberRouter(destRouter); 
-      requireTreeRebuild = true; 
+    group = *nameItr;
+    if (!(group->containsMemberRouter(memberRouter))) {
+      group->addMemberRouter(memberRouter);
+      requireTreeRebuild = true;
     }
   }
 
-  if (requireTreeRebuild) { 
-    rebuildMulticastTree(group); 
+  if (requireTreeRebuild) {
+    rebuildMulticastTree(group);
   }
 }
 
-void 
-NamePrefixTable::rebuildMulticastTree(const NamePrefixTableMulticastEntry& prefix)
+void // TODO: Can we give this a more intuitive name?
+NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter)
 {
-  m_routingTable.getMcastRoutingNexthopList(); 
+  auto nameItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
+      [&] (const std::shared_ptr<NamePrefixTableMulticastEntry>& grp) {
+        return grp->getNamePrefix() == name;
+      });
+
+  std::shared_ptr<NamePrefixTableMulticastEntry> group;
+  bool requireTreeRebuild = false;
+
+  if (nameItr == m_mcTable.end()) {
+    NLSR_LOG_DEBUG("Router " << memberRouter
+        << " leaving unknown multicast group:" << name << ".\n");
+    return;
+  }
+
+  auto group = *nameItr;
+  if (!group->containsMemberRouter(memberRouter)) {
+    NLSR_LOG_DEBUG("Router " << memberRouter
+        << " leaving a group it wasn't a member of: " << name << ".\n");
+    return;
+  }
+
+  group->removeMemberRouter(memberRouter); 
+  rebuildMulticastTree(group);
+}
+
+void
+NamePrefixTable::rebuildMulticastTree(const NamePrefixTableMulticastEntry& group)
+{
+  /* m_routingTable.getMcastRoutingNexthopList();
   // TODO: Call the routing table method here!
   // It should take an NamePrefixTableMulticastEntry and either return next hops
-  // (or just augment the NamePrefixTableMulticastEntry struct with next hops). 
+  // (or just augment the NamePrefixTableMulticastEntry struct with next hops).
+
+  // TODO: Adapt the below code.
+  if (npte->getNexthopList().size() > 0) {
+    NLSR_LOG_TRACE("Updating FIB with next hops for " << npte->getNamePrefix());
+    m_fib.update(name, npte->getNexthopList());
+  }
+  // The routing table may recalculate and add a routing table entry
+  // with no next hops to replace an existing routing table entry. In
+  // this case, the name prefix is no longer reachable through a next
+  // hop and should be removed from the FIB. But, the prefix should
+  // remain in the Name Prefix Table as a future routing table
+  // calculation may add next hops.
+  else {
+    NLSR_LOG_TRACE(npte->getNamePrefix() << " has no next hops; removing from FIB");
+    m_fib.remove(name);
+  } */
 }
 
 void
@@ -232,10 +276,6 @@ NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bo
     npte->addRoutingTableEntry(rtpePtr);
     npte->generateNhlfromRteList();
     m_table.push_back(npte);
-
-    if (isMulticast) {
-      m_mcTable.push_back(npte);
-    }
 
     // If this entry has next hops, we need to inform the FIB
     if (npte->getNexthopList().size() > 0) {
@@ -387,9 +427,9 @@ NamePrefixTable::updateWithNewRoute(const std::list<RoutingTableEntry>& entries)
   }
 
   // Unconditionally rebuild all multicast trees; it's easier than calculating
-  // how a given router going down/up will affect a set of multicast trees. 
-  for (const auto& entry : m_mcTable) { 
-    rebuildMulticastTree(*entry); 
+  // how a given router going down/up will affect a set of multicast trees.
+  for (const auto& entry : m_mcTable) {
+    rebuildMulticastTree(*entry);
   }
 }
 
