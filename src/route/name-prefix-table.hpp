@@ -148,12 +148,6 @@ public:
   const_iterator
   end() const;
 
-  const_iterator
-  beginMulticast() const;
-
-  const_iterator
-  endMulticast() const;
-
 PUBLIC_WITH_TESTS_ELSE_PRIVATE:
   RoutingTableEntryPool m_rtpool;
 
