@@ -174,7 +174,7 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
   }
 }
 
-void // TODO: Can we give this a more intuitive name?
+void
 NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter)
 {
   auto nameItr = std::find_if(m_mcTable.begin(), m_mcTable.end(),
@@ -292,8 +292,6 @@ NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bo
   }
   else {
     npte = *nameItr;
-    // TODO: Perform check if existing entry is multicast and compare with
-    // isMulticast; define behavior for mismatch
     NLSR_LOG_TRACE("Adding origin: " << rtpePtr->getDestination() <<
                    " to existing prefix: " << **nameItr);
     (*nameItr)->addRoutingTableEntry(rtpePtr);
