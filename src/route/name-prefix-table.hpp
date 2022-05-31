@@ -78,18 +78,18 @@ public:
     a match, it will instantiate it with no next hops. The FIB will be
     notified of the change to the NPT entry, too.
    */
+  void // TODO: Docs don't match updated signature here. 
+  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast);
+
+  void
+  addMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter); 
+
+  // TODO: Deprecate this shim
   void
   addEntry(const ndn::Name& name, const ndn::Name& destRouter)
   {
     addEntry(name, destRouter, false); 
   }
-
-  void
-  addMulticastEntry(const ndn::Name& name, const ndn::Name& destRouter); 
-
-  // TODO: Deprecate (privatize) this
-  void
-  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast);
 
   /*! \brief Removes a destination from a name prefix table entry.
     \param name The name prefix
@@ -104,6 +104,9 @@ public:
    */
   void
   removeEntry(const ndn::Name& name, const ndn::Name& destRouter);
+
+  void 
+  removeMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter);
 
   /*! \brief Updates all routing information in the NPT.
 
@@ -138,6 +141,9 @@ public:
   */
   void
   deleteRtpeFromPool(std::shared_ptr<RoutingTablePoolEntry> rtpePtr);
+
+  void
+  rebuildMulticastTree(const NamePrefixTableMulticastEntry& group); 
 
   void
   writeLog();
