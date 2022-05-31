@@ -134,8 +134,10 @@ public:
                  uint64_t flags,
                  uint8_t times);
 
+  /*! \brief Set a prefix's NFD forwarding strategy
+   */
   void
-  setStrategy(const ndn::Name& name, const std::string& strategy, uint32_t count);
+  setStrategy(const ndn::Name& name, const std::string& strategy, uint32_t retryCount);
 
   void
   writeLog();

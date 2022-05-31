@@ -278,7 +278,7 @@ Fib::unregisterPrefix(const ndn::Name& namePrefix, const std::string& faceUri)
 }
 
 void
-Fib::setStrategy(const ndn::Name& name, const std::string& strategy, uint32_t count)
+Fib::setStrategy(const ndn::Name& name, const std::string& strategy, uint32_t retryCount)
 {
   ndn::nfd::ControlParameters parameters;
   parameters
@@ -288,7 +288,7 @@ Fib::setStrategy(const ndn::Name& name, const std::string& strategy, uint32_t co
   m_controller.start<ndn::nfd::StrategyChoiceSetCommand>(parameters,
                                                          std::bind(&Fib::onSetStrategySuccess, this, _1),
                                                          std::bind(&Fib::onSetStrategyFailure, this, _1,
-                                                                   parameters, count));
+                                                                   parameters, retryCount));
 }
 
 void
