@@ -47,8 +47,6 @@ operator<<(std::ostream& os, const NamePrefixTableMulticastEntry& entry)
     os << "  Member: " << destination << "\n";
   }
 
-  os << entry.getNexthopList(); 
-
   return os;
 }
 

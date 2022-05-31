@@ -208,18 +208,18 @@ NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEn
 {
   // Ask the routing table to generate a NextHopList based on a multicast
   // distribution tree. 
-  auto nextHopList = m_routingTable.getMulticastNexthopList(
-      group->getMemberRouters());
+  auto nextHopList = m_routingTable.getMulticastNexthopList(group->getMemberRouters());
 
   if (nextHopList.size() > 0) {
     NLSR_LOG_TRACE("Updating FIB with next hops for multicast prefix " 
         << group->getNamePrefix()); 
-    m_fib.update(name, nextHopList); 
+    // TODO: How should we inform the FIB that this is a multicast prefix? 
+    m_fib.update(group->getNamePrefix(), nextHopList); 
   }
   else {
     NLSR_LOG_TRACE("Multicast prefix " << group->getNamePrefix() 
         << " has no next hops; removing from FIB");
-    m_fib.remove(name);
+    m_fib.remove(group->getNamePrefix());
   }
 }
 
