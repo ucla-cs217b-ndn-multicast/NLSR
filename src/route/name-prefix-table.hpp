@@ -77,7 +77,7 @@ public:
     notified of the change to the NPT entry, too.
    */
   void
-Ad  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast = false);
+  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast = false);
 
   /*! \brief Removes a destination from a name prefix table entry.
     \param name The name prefix

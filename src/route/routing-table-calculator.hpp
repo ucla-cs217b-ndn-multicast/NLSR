@@ -26,6 +26,7 @@
 #include "lsa/adj-lsa.hpp"
 #include "lsdb.hpp"
 #include "conf-parameter.hpp"
+#include "nexthop-list.hpp"
 
 #include <list>
 
@@ -200,6 +201,36 @@ private:
 public:
   static const int NO_NEXT_HOP;
 
+};
+
+class MulticastRoutingTableCalculator : public RoutingTableCalculator {
+public:
+  MulticastRoutingTableCalculator(size_t nRouters, Map& map, Lsdb& lsdb, ConfParameter& confParam)
+      : RoutingTableCalculator(nRouters)
+      , m_map(map)
+      , m_confParam(confParam)
+  {
+    allocateAdjMatrix();
+    initMatrix();
+    makeAdjMatrix(lsdb, map);
+    writeAdjMatrixLog(map);
+  }
+
+  ~MulticastRoutingTableCalculator()
+  {
+    freeAdjMatrix();
+  }
+
+  NexthopList
+  calculateNextHopList(const std::set<ndn::Name>& destinations);
+
+private:
+  double** m_adjMatrix{};
+  Map& m_map;
+  ConfParameter& m_confParam;
+
+  NextHop
+  getNextHop(const ndn::Name& adjRouter);
 };
 
 class AdjacencyList;

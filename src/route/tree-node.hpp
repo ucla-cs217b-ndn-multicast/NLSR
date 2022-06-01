@@ -22,26 +22,29 @@
 #ifndef NLSR_TREE_NODE_HPP
 #define NLSR_TREE_NODE_HPP
 
+#include <iostream>
 #include <memory>
 #include <list>
 
 namespace nlsr {
-  template<typename T>
-  class TreeNode : public std::enable_shared_from_this<TreeNode<T>> {
-    using TreeNodeList = std::list<std::weak_ptr<TreeNode<T>>>;
+  template<typename ValueType>
+  class TreeNode : public std::enable_shared_from_this<TreeNode<ValueType>> {
+    using TreeNodeList = std::list<std::shared_ptr<TreeNode<ValueType>>>;
     using const_iterator = typename TreeNodeList::const_iterator;
 
   public:
-    explicit TreeNode(std::shared_ptr<T> value) {
-      m_value = value;
+    explicit TreeNode(ValueType value)
+      : m_value(value)
+    {
       m_children = TreeNodeList();
     }
 
     /*! \brief Returns the value encapsulated by this tree node.
      *  \return The encapsulated value.
      */
-    std::shared_ptr<T>
-    getValue() {
+    ValueType
+    getValue()
+    {
       return m_value;
     }
 
@@ -49,31 +52,38 @@ namespace nlsr {
      *  \brief Returns the parent tree node or nullptr if there is no parent node.
      *  \return The parent tree node.
      */
-    std::shared_ptr<TreeNode<T>>
-    getParent() {
-      return m_parent;
+    std::shared_ptr<TreeNode<ValueType>>
+    getParent()
+    {
+      return m_parent.lock();
+    }
+
+    bool
+    isLeaf()
+    {
+      return m_children.size() == 0;
     }
 
     /*! \brief Creates and adds a new tree node with the provided value as child to this tree node.
      *  \param node The value of the tree node that should be created and added as child node.
      *  \return The added tree node.
      */
-    std::shared_ptr<TreeNode<T>>
-    addChild(std::shared_ptr<T> nodeValue);
+    std::shared_ptr<TreeNode<ValueType>>
+    addChild(ValueType nodeValue);
 
     /*! \brief Adds a tree node as child to this tree node.
      *  \param node The tree node that should be added as child node.
      *  \return true if the node was added, false if not and the child is already assigned to another parent.
      */
     bool
-    addChild(std::shared_ptr<TreeNode<T>> node);
+    addChild(std::shared_ptr<TreeNode<ValueType>> node);
 
     /*! \brief Removes a tree node as child from this tree node.
      *  \param node The tree node that should be removed as child node.
      *  \return true if the node was removed, false if not and the node is not assigned to this node as child.
      */
     bool
-    removeChild(std::shared_ptr<TreeNode<T>> node);
+    removeChild(std::shared_ptr<TreeNode<ValueType>> node);
 
     /*! \brief Removes this tree node from the tree.
      *  \return true if the node was removed, false if not and the node is not assigned to any parent node.
@@ -88,18 +98,43 @@ namespace nlsr {
     const_iterator
     endChildren();
 
+    friend std::ostream&
+    operator<<(std::ostream& os, TreeNode<ValueType>& node)
+    {
+      os << node.m_value << " {";
+      bool sep = false;
+
+      for (auto itr = node.beginChildren(); itr != node.endChildren(); itr++) {
+        if (sep) {
+          os << ", ";
+        } else {
+          sep = true;
+        }
+
+        os << (*itr)->getValue();
+      }
+
+      os << "}\n";
+
+      for (auto itr = node.beginChildren(); itr != node.endChildren(); itr++) {
+        os << **itr;
+      }
+
+      return os;
+    }
+
   private:
-    std::shared_ptr<T> m_value;
-    std::shared_ptr<TreeNode<T>> m_parent;
+    ValueType m_value;
+    std::weak_ptr<TreeNode<ValueType>> m_parent;
     TreeNodeList m_children;
   };
 
-  template<typename T>
-  std::shared_ptr<TreeNode<T>>
-  TreeNode<T>::addChild(std::shared_ptr<T> nodeValue) {
-    auto node = std::make_shared<TreeNode<T>>(nodeValue);
+  template<typename ValueType>
+  std::shared_ptr<TreeNode<ValueType>>
+  TreeNode<ValueType>::addChild(ValueType nodeValue) {
+    auto node = std::make_shared<TreeNode<ValueType>>(nodeValue);
     m_children.push_back(node);
-    node->m_parent = TreeNode<T>::shared_from_this();
+    node->m_parent = TreeNode<ValueType>::shared_from_this();
     return node;
   }
 
@@ -108,7 +143,7 @@ namespace nlsr {
   TreeNode<T>::addChild(std::shared_ptr<TreeNode<T>> node) {
     TreeNode<T> *n = node.get();
 
-    if (n->m_parent != nullptr) {
+    if (n->m_parent.lock().get() != nullptr) {
       return false;
     }
 
@@ -122,16 +157,12 @@ namespace nlsr {
   TreeNode<T>::removeChild(std::shared_ptr<TreeNode<T>> node) {
     TreeNode<T> *n = node.get();
 
-    if (n->m_parent.get() != this) {
+    if (n->m_parent.lock().get() != this) {
       return false;
     }
 
-    m_children.remove_if([node](std::weak_ptr<TreeNode<T>> ptr) {
-      std::shared_ptr<TreeNode<T>> other = ptr.lock();
-      if (other) {
-        return other == node;
-      }
-      return false;
+    m_children.remove_if([node](std::shared_ptr<TreeNode<T>> ptr) {
+      return ptr == node;
     });
 
     n->m_parent = std::shared_ptr<TreeNode<T>>(nullptr);
@@ -140,11 +171,13 @@ namespace nlsr {
 
   template<typename T>
   bool TreeNode<T>::remove() {
-    if (m_parent == nullptr) {
+    auto parentPtr = m_parent.lock();
+
+    if (parentPtr.get() == nullptr) {
       return false;
     }
 
-    return m_parent->removeChild(this->shared_from_this());
+    return parentPtr->removeChild(this->shared_from_this());
   }
 
   template<typename T>

@@ -9,31 +9,31 @@
 namespace nlsr {
   namespace test {
     BOOST_AUTO_TEST_SUITE(TestTreeNode)
+      BOOST_AUTO_TEST_CASE(AddTreeNodeChildren)
+      {
+        auto node1 = std::make_shared<TreeNode<int>>(5);
+        auto node2 = std::make_shared<TreeNode<int>>(6);
+        auto node3 = std::make_shared<TreeNode<int>>(7);
 
-    BOOST_AUTO_TEST_CASE(AddTreeNodeChildren)
-    {
-      auto node1 = std::make_shared<TreeNode<int>>(std::make_shared<int>(5));
-      auto node2 = std::make_shared<TreeNode<int>>(std::make_shared<int>(6));
-      auto node3 = std::make_shared<TreeNode<int>>(std::make_shared<int>(7));
+        node1->addChild(node2);
+        node1->addChild(node3);
 
-      node1->addChild(node2);
-      node1->addChild(node3);
+        auto it = node1->beginChildren();
 
-      auto it = node1->beginChildren();
-      BOOST_CHECK_EQUAL(*(node2->getValue().get()), *(it->lock()->getValue().get()));
-      it++;
+        BOOST_CHECK_EQUAL(node2->getValue(), (*it)->getValue());
+        it++;
 
-      BOOST_CHECK_EQUAL(*(node3->getValue().get()), *(it->lock()->getValue().get()));
-      it++;
+        BOOST_CHECK_EQUAL(node3->getValue(), (*it)->getValue());
+        it++;
 
-      BOOST_CHECK(node1->endChildren() == it);
-    }
+        BOOST_CHECK(node1->endChildren() == it);
+      }
 
       BOOST_AUTO_TEST_CASE(RemoveTreeNodeChildren)
       {
-        auto node1 = std::make_shared<TreeNode<int>>(std::make_shared<int>(5));
-        auto node2 = std::make_shared<TreeNode<int>>(std::make_shared<int>(6));
-        auto node3 = std::make_shared<TreeNode<int>>(std::make_shared<int>(7));
+        auto node1 = std::make_shared<TreeNode<int>>(5);
+        auto node2 = std::make_shared<TreeNode<int>>(6);
+        auto node3 = std::make_shared<TreeNode<int>>(7);
 
         node1->addChild(node2);
         node1->addChild(node3);
@@ -41,7 +41,7 @@ namespace nlsr {
         node1->removeChild(node2);
 
         auto it = node1->beginChildren();
-        BOOST_CHECK_EQUAL(*(node3->getValue().get()), *(it->lock()->getValue().get()));
+        BOOST_CHECK_EQUAL(node3->getValue(), (*it)->getValue());
         it++;
 
         BOOST_CHECK(node1->endChildren() == it);
