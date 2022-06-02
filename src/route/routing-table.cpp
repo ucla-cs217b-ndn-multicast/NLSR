@@ -26,6 +26,7 @@
 #include "routing-table-entry.hpp"
 #include "logger.hpp"
 #include "tlv-nlsr.hpp"
+#include <memory>
 
 namespace nlsr {
 
@@ -215,6 +216,20 @@ RoutingTable::findRoutingTableEntry(const ndn::Name& destRouter)
     return &(*it);
   }
   return nullptr;
+}
+
+std::shared_ptr<NexthopList>
+RoutingTable::getMulticastNexthopList(const std::set<ndn::Name>& memberRouters) const
+{
+  Map map;
+  auto lsaRange = m_lsdb.getLsdbIterator<CoordinateLsa>();
+  map.createFromCoordinateLsdb(lsaRange.first, lsaRange.second);
+  map.writeLog();
+
+  size_t nRouters = map.getMapSize();
+
+  MulticastRoutingTableCalculator calculator(nRouters, map, m_lsdb, m_confParam); 
+  return std::make_shared<NexthopList>(calculator.calculateNextHopList(memberRouters));
 }
 
 void

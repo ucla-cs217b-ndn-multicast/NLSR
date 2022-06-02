@@ -121,6 +121,17 @@ public:
   RoutingTableEntry*
   findRoutingTableEntry(const ndn::Name& destRouter);
 
+
+  /*! \brief Returns how to reach a set of multicast group members. 
+   *
+   * Given a set of routers in a multicast group, returns the NextHops that
+   * will allow for the efficient sending of interests to all group members. 
+   * 
+   *  \param memberRouters The set of routers in the multicast group. 
+   */
+  std::shared_ptr<NexthopList>
+  getMulticastNexthopList(const std::set<ndn::Name>& memberRouters) const;
+
   /*! \brief Schedules a calculation event in the event scheduler only
    *  if one isn't already scheduled.
    */

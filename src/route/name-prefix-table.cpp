@@ -206,15 +206,15 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& name, const ndn::Name& me
 void
 NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEntry> group) 
 {
-  // Ask the routing table to generate a NextHopList based on a multicast
+  // Ask the routing table to generate a NexthopList based on a multicast
   // distribution tree. 
   auto nextHopList = m_routingTable.getMulticastNexthopList(group->getMemberRouters());
   auto prefix = group->getNamePrefix(); 
 
-  if (nextHopList.size() > 0) {
+  if (nextHopList->size() > 0) {
     NLSR_LOG_TRACE("Updating FIB with next hops for multicast prefix " << prefix); 
     // Add the multicast prefix to the FIB. 
-    m_fib.update(prefix, nextHopList); 
+    m_fib.update(prefix, *nextHopList); 
     // Inform the FIB that this prefix should use multicast forwarding. 
     // 0 => "retry setting the strategy 0 times". 
     m_fib.setStrategy(prefix, Fib::MULTICAST_STRATEGY, 0);
