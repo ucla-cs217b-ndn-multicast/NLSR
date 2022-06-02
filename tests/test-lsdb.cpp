@@ -116,7 +116,7 @@ public:
   {
     lsdb.onLsdbModified.connect(
       [&] (std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
-           const auto& namesToAdd, const auto& namesToRemove) {
+           const auto& namesToAdd, const auto& namesToRemove, const auto& mcNamesToAdd, const auto& mcNamesToRemove) {
         lsaPtrCheck = lsa;
         updateTypeCheck = updateType;
         namesToAddCheck = namesToAdd;

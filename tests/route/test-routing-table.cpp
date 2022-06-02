@@ -36,7 +36,9 @@ public:
     , conf(face, m_keyChain)
     , confProcessor(conf)
     , lsdb(face, m_keyChain, conf)
-    , rt(m_scheduler, lsdb, conf)
+    , fib(face, m_scheduler, conf.getAdjacencyList(), conf, m_keyChain)
+    , rt(m_scheduler, lsdb, npt, conf),
+      npt(conf.getRouterName(), fib, rt, rt.afterRoutingChange, lsdb.onLsdbModified)
   {
   }
 
@@ -46,7 +48,9 @@ public:
   DummyConfFileProcessor confProcessor;
 
   Lsdb lsdb;
+  Fib fib;
   RoutingTable rt;
+  NamePrefixTable npt;
 };
 
 BOOST_AUTO_TEST_SUITE(TestRoutingTable)

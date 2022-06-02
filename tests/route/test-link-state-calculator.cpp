@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(AsymmetricZeroCostLink)
   RoutingTableEntry* entryB = routingTable.findRoutingTableEntry(ROUTER_B_NAME);
   BOOST_REQUIRE(entryB != nullptr);
 
-  // Node can have neighbors with zero cost, so the nexthop count should be 2
+  // TreeNodePtr can have neighbors with zero cost, so the nexthop count should be 2
   NexthopList& bHopList = entryB->getNexthopList();
   BOOST_REQUIRE_EQUAL(bHopList.getNextHops().size(), 2);
 

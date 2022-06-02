@@ -26,6 +26,7 @@
 #include "nlsr.hpp"
 #include "logger.hpp"
 #include "adjacent.hpp"
+#include "spt-calculator.hpp"
 
 #include <boost/math/constants/constants.hpp>
 #include <ndn-cxx/util/logger.hpp>
@@ -425,6 +426,60 @@ LinkStateRoutingTableCalculator::freeParent()
 void LinkStateRoutingTableCalculator::freeDistance()
 {
   delete [] m_distance;
+}
+
+NexthopList
+MulticastRoutingTableCalculator::calculateNextHopList(const std::set<ndn::Name>& destinations)
+{
+  std::set<int32_t> destinationRouterIds;
+
+  const ndn::Name& ownRouterName = m_confParam.getRouterName();
+  int32_t ownRouterId = *m_map.getMappingNoByRouterName(ownRouterName);
+
+  ndn::Name lowest = ownRouterName;
+  int32_t rootRouterId = ownRouterId;
+
+  for (const ndn::Name& destination : destinations) {
+    int32_t destinationRouterId = *m_map.getMappingNoByRouterName(destination);
+    destinationRouterIds.insert(destinationRouterId);
+
+    if (destination < lowest) {
+      lowest = destination;
+      rootRouterId = destinationRouterId;
+    }
+  }
+
+  if (destinations.find(ownRouterName) == destinations.end()) {
+    destinationRouterIds.insert(ownRouterId);
+  }
+
+  ShortestPathTreeCalculator treeCalculator(m_nRouters, m_adjMatrix);
+  treeCalculator.calculateTree(rootRouterId, destinationRouterIds);
+
+  NexthopList nhl;
+  Tree<int32_t>& tree = treeCalculator.getTree();
+  auto ownTreeNode = tree[ownRouterId];
+  auto parentNode = ownTreeNode->getParent();
+
+  if (parentNode) {
+    auto nh = getNextHop(m_map.getRouterNameByMappingNo(parentNode->getValue()).value());
+    nhl.addNextHop(nh);
+  }
+
+  for (auto itr = ownTreeNode->beginChildren(); itr != ownTreeNode->endChildren(); itr++) {
+    auto nh = getNextHop(m_map.getRouterNameByMappingNo((*itr)->getValue()).value());
+    nhl.addNextHop(nh);
+  }
+
+  return nhl;
+}
+
+NextHop
+MulticastRoutingTableCalculator::getNextHop(const ndn::Name& adjRouter)
+{
+  AdjacencyList& adjList = m_confParam.getAdjacencyList();
+  std::string nextHopFace = adjList.getAdjacent(adjRouter).getFaceUri().toString();
+  return NextHop(nextHopFace, 0);
 }
 
 const double HyperbolicRoutingCalculator::MATH_PI = boost::math::constants::pi<double>();
