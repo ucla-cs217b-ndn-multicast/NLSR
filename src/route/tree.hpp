@@ -33,13 +33,13 @@ namespace nlsr {
   template <typename TreeNodeValueType>
   class Tree {
   public:
-    using TreeNode = TreeNode<TreeNodeValueType>;
-    using TreeNodePtr = std::shared_ptr<TreeNode>;
+    using TreeNodeT = TreeNode<TreeNodeValueType>;
+    using TreeNodePtr = std::shared_ptr<TreeNodeT>;
     using TreeNodePool = std::unordered_map<TreeNodeValueType, TreeNodePtr>;
 
     Tree()
     {
-      m_root = std::shared_ptr<TreeNode>(nullptr);
+      m_root = std::shared_ptr<TreeNodeT>(nullptr);
     }
 
     /*! \brief Returns the root node of the multicast tree.
@@ -107,7 +107,7 @@ namespace nlsr {
   template <typename TreeNodeValueType>
   typename Tree<TreeNodeValueType>::TreeNodePtr
   Tree<TreeNodeValueType>::setRoot(const TreeNodeValueType &rootValue) {
-    auto root = std::make_shared<TreeNode>(rootValue);
+    auto root = std::make_shared<TreeNodeT>(rootValue);
     m_root = root;
     m_mctnPool[rootValue] = root;
     return root;
