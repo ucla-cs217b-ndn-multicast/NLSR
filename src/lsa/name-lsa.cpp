@@ -56,7 +56,7 @@ NameLsa::wireEncode(ndn::EncodingImpl<TAG>& block) const
 
   totalLength += multicastNamesLength;
   totalLength += block.prependVarNumber(multicastNamesLength);
-  totalLength += block.prependVarNumber(129);
+  totalLength += block.prependVarNumber(ndn::tlv::nlsr::NamePrefixList);
 
   auto names = m_npl.getNames();
 
@@ -66,7 +66,7 @@ NameLsa::wireEncode(ndn::EncodingImpl<TAG>& block) const
 
   totalLength += namesLength;
   totalLength += block.prependVarNumber(namesLength);
-  totalLength += block.prependVarNumber(129); // TODO: Set appropriate TLV type
+  totalLength += block.prependVarNumber(ndn::tlv::nlsr::NamePrefixList);
 
   totalLength += Lsa::wireEncode(block);
 
@@ -120,7 +120,7 @@ NameLsa::wireDecode(const ndn::Block& wire)
   NamePrefixList npl;
 
   // Decode names from name prefix list
-  if (val != m_wire.elements_end() && val->type() == 129) { // TODO: Set appropriate TLV type
+  if (val != m_wire.elements_end() && val->type() == ndn::tlv::nlsr::NamePrefixList) {
     ndn::Block baseWire = *val;
     baseWire.parse();
 
@@ -142,7 +142,7 @@ NameLsa::wireDecode(const ndn::Block& wire)
   ++val;
 
   // Decode multicast names from name prefix list
-  if (val != m_wire.elements_end() && val->type() == 129) { // TODO: Set appropriate TLV type
+  if (val != m_wire.elements_end() && val->type() == ndn::tlv::nlsr::NamePrefixList) {
     ndn::Block baseWire = *val;
     baseWire.parse();
 

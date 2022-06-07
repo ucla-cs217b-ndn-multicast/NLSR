@@ -33,6 +33,7 @@ namespace nlsr {
  */
 enum {
   Lsa                         = 128,
+  NamePrefixList              = 129,
   SequenceNumber              = 130,
   AdjacencyLsa                = 131,
   Adjacency                   = 132,
