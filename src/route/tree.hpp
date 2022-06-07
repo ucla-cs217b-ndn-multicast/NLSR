@@ -33,13 +33,13 @@ namespace nlsr {
   template <typename TreeNodeValueType>
   class Tree {
   public:
-    using TreeNode = TreeNode<TreeNodeValueType>;
-    using TreeNodePtr = std::shared_ptr<TreeNode>;
+    using TreeNodeType = TreeNode<TreeNodeValueType>;
+    using TreeNodePtr = std::shared_ptr<TreeNodeType>;
     using TreeNodePool = std::unordered_map<TreeNodeValueType, TreeNodePtr>;
 
     Tree()
     {
-      m_root = std::shared_ptr<TreeNode>(nullptr);
+      m_root = TreeNodePtr(nullptr);
     }
 
     /*! \brief Returns the root node of the multicast tree.
@@ -107,7 +107,7 @@ namespace nlsr {
   template <typename TreeNodeValueType>
   typename Tree<TreeNodeValueType>::TreeNodePtr
   Tree<TreeNodeValueType>::setRoot(const TreeNodeValueType &rootValue) {
-    auto root = std::make_shared<TreeNode>(rootValue);
+    auto root = std::make_shared<TreeNodeType>(rootValue);
     m_root = root;
     m_mctnPool[rootValue] = root;
     return root;
@@ -150,7 +150,6 @@ namespace nlsr {
   void
   Tree<TreeNodeValueType>::pruneIf(const Tree::TreeNodePtr &node, std::function<bool(TreeNodePtr)> predicate)
   {
-    std::cerr << node->getValue() << std::endl;
     for (auto itr = node->beginChildren(); itr != node->endChildren(); itr++) {
       pruneIf(*itr, predicate);
     }

@@ -79,14 +79,15 @@ namespace nlsr {
   }
 
   void
-  ShortestPathTreeCalculator::calculateTree(int32_t rootNodeId, std::set<int32_t>& inclNodes)
+  ShortestPathTreeCalculator::calculateTree(int32_t rootNodeId, const std::set<int32_t>& inclNodes)
   {
     bool limit = !inclNodes.empty();
+    std::set<int32_t> remInclNodes(inclNodes);
 
     enqueue(rootNodeId, rootNodeId, 0);
     m_tree.setRoot(rootNodeId);
 
-    if (limit && inclNodes.erase(rootNodeId) && inclNodes.empty()) {
+    if (limit && remInclNodes.erase(rootNodeId) && remInclNodes.empty()) {
       return;
     }
 
@@ -109,7 +110,7 @@ namespace nlsr {
         auto parent = m_tree[parents[head]];
         m_tree.addChild(parent, head);
 
-        if (limit && inclNodes.erase(head) && inclNodes.empty()) {
+        if (limit && remInclNodes.erase(head) && remInclNodes.empty()) {
           break;
         }
       } else {
