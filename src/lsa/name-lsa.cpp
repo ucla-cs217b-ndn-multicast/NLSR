@@ -180,7 +180,11 @@ NameLsa::toString() const
   for (const auto& name : m_npl.getNames()) {
     os << "        Name " << i++ << ": " << name << "\n";
   }
-
+  os << "      Multicast Names:\n";
+  i = 0;
+  for (const auto& name : m_npl.getMulticastNames()) {
+    os << "        Multicast " << i++ << ": " << name << "\n";
+  }
   return os.str();
 }
 
