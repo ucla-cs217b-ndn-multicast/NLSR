@@ -150,7 +150,6 @@ namespace nlsr {
   void
   Tree<TreeNodeValueType>::pruneIf(const Tree::TreeNodePtr &node, std::function<bool(TreeNodePtr)> predicate)
   {
-    std::cerr << node->getValue() << std::endl;
     for (auto itr = node->beginChildren(); itr != node->endChildren(); itr++) {
       pruneIf(*itr, predicate);
     }

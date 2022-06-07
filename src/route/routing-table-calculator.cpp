@@ -433,7 +433,7 @@ MulticastRoutingTableCalculator::calculateNextHopList(const std::set<ndn::Name>&
 {
   std::set<int32_t> destinationRouterIds;
 
-  const ndn::Name& ownRouterName = m_confParam.getRouterName();
+  const ndn::Name& ownRouterName = m_confParam.getRouterPrefix();
   int32_t ownRouterId = *m_map.getMappingNoByRouterName(ownRouterName);
 
   ndn::Name lowest = ownRouterName;
@@ -453,11 +453,11 @@ MulticastRoutingTableCalculator::calculateNextHopList(const std::set<ndn::Name>&
     destinationRouterIds.insert(ownRouterId);
   }
 
-  ShortestPathTreeCalculator treeCalculator(m_nRouters, m_adjMatrix);
+  ShortestPathTreeCalculator treeCalculator(m_nRouters, adjMatrix);
   treeCalculator.calculateTree(rootRouterId, destinationRouterIds);
 
   NexthopList nhl;
-  Tree<int32_t>& tree = treeCalculator.getTree();
+  Tree<int32_t> tree = treeCalculator.getTree();
   auto ownTreeNode = tree[ownRouterId];
   auto parentNode = ownTreeNode->getParent();
 

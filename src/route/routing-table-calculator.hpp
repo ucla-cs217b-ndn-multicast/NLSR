@@ -29,6 +29,7 @@
 #include "nexthop-list.hpp"
 
 #include <list>
+#include <iostream>
 
 namespace nlsr {
 
@@ -225,7 +226,6 @@ public:
   calculateNextHopList(const std::set<ndn::Name>& destinations);
 
 private:
-  double** m_adjMatrix{};
   Map& m_map;
   ConfParameter& m_confParam;
 

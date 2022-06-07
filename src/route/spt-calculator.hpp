@@ -38,7 +38,7 @@ namespace nlsr {
     /*! \brief Returns the calculated shortest path tree.
      *  \return The shortest path tree.
      */
-    Tree<int32_t>&
+    Tree<int32_t>
     getTree()
     {
       return m_tree;
@@ -51,7 +51,7 @@ namespace nlsr {
      *  \param inclNodes The list of included nodes.
      */
     void
-    calculateTree(int32_t rootNodeId, std::set<int32_t>& inclNodes);
+    calculateTree(int32_t rootNodeId, const std::set<int32_t>& inclNodes);
 
   private:
     size_t m_nNodes;
