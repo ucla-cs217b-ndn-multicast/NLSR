@@ -32,6 +32,10 @@ NameLsa::NameLsa(const ndn::Name& originRouter, uint64_t seqNo,
   for (const auto& name : npl.getNames()) {
     addName(name);
   }
+
+  for (const auto& name : npl.getMulticastNames()) {
+    addMulticastName(name);
+  }
 }
 
 NameLsa::NameLsa(const ndn::Block& block)
