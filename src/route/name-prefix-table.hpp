@@ -78,9 +78,8 @@ public:
     a match, it will instantiate it with no next hops. The FIB will be
     notified of the change to the NPT entry, too.
    */
-  // TODO: Deprecate "isMulticast" entirely. 
-  void 
-  addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast = false);
+  void
+  addEntry(const ndn::Name& name, const ndn::Name& destRouter);
 
   void
   addMulticastEntry(const ndn::Name& name, const ndn::Name& memberRouter); 

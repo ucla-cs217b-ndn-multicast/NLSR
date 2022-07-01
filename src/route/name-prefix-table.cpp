@@ -75,13 +75,13 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
   NLSR_LOG_TRACE("Got update from Lsdb for router: " << lsa->getOriginRouter());
 
   if (updateType == LsdbUpdate::INSTALLED) {
-    addEntry(lsa->getOriginRouter(), lsa->getOriginRouter(), false);
+    addEntry(lsa->getOriginRouter(), lsa->getOriginRouter());
 
     if (lsa->getType() == Lsa::Type::NAME) {
       auto nlsa = std::static_pointer_cast<NameLsa>(lsa);
       for (const auto& name : nlsa->getNpl().getNames()) {
         if (name != m_ownRouterName) {
-          addEntry(name, lsa->getOriginRouter(), false);
+          addEntry(name, lsa->getOriginRouter());
         }
       }
 
@@ -99,7 +99,7 @@ NamePrefixTable::updateFromLsdb(std::shared_ptr<Lsa> lsa, LsdbUpdate updateType,
 
     for (const auto& name : namesToAdd) {
       if (name != m_ownRouterName) {
-        addEntry(name, lsa->getOriginRouter(), false);
+        addEntry(name, lsa->getOriginRouter());
       }
     }
 
@@ -227,7 +227,7 @@ NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEn
 }
 
 void
-NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bool isMulticast)
+NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter)
 {
   // Check if the advertised name prefix is in the table already.
   NptEntryList::iterator nameItr =
@@ -271,7 +271,7 @@ NamePrefixTable::addEntry(const ndn::Name& name, const ndn::Name& destRouter, bo
   if (nameItr == m_table.end()) {
     NLSR_LOG_DEBUG("Adding origin: " << rtpePtr->getDestination()
                    << " to a new name prefix: " << name);
-    npte = std::make_shared<NamePrefixTableEntry>(name, isMulticast);
+    npte = std::make_shared<NamePrefixTableEntry>(name);
     npte->addRoutingTableEntry(rtpePtr);
     npte->generateNhlfromRteList();
     m_table.push_back(npte);
@@ -401,7 +401,7 @@ NamePrefixTable::updateWithNewRoute(const std::list<RoutingTableEntry>& entries)
       poolEntry->setNexthopList(sourceEntry->getNexthopList());
       for (const auto& nameEntry : poolEntry->namePrefixTableEntries) {
         auto nameEntryFullPtr = nameEntry.second.lock();
-        addEntry(nameEntryFullPtr->getNamePrefix(), poolEntry->getDestination(), nameEntryFullPtr->isMulticast());
+        addEntry(nameEntryFullPtr->getNamePrefix(), poolEntry->getDestination());
       }
     }
     else if (sourceEntry == entries.end()) {
@@ -409,7 +409,7 @@ NamePrefixTable::updateWithNewRoute(const std::list<RoutingTableEntry>& entries)
       poolEntry->getNexthopList().clear();
       for (const auto& nameEntry : poolEntry->namePrefixTableEntries) {
         auto nameEntryFullPtr = nameEntry.second.lock();
-        addEntry(nameEntryFullPtr->getNamePrefix(), poolEntry->getDestination(), nameEntryFullPtr->isMulticast());
+        addEntry(nameEntryFullPtr->getNamePrefix(), poolEntry->getDestination());
       }
     }
     else {
