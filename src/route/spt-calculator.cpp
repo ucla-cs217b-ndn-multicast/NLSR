@@ -81,12 +81,15 @@ namespace nlsr {
   void
   ShortestPathTreeCalculator::calculateTree(int32_t rootNodeId, const std::set<int32_t>& inclNodes)
   {
+    // Limit resulting tree to only contain included nodes, if provided
     bool limit = !inclNodes.empty();
     std::set<int32_t> remInclNodes(inclNodes);
 
+    // Add root node to tree and initialize queue
     enqueue(rootNodeId, rootNodeId, 0);
     m_tree.setRoot(rootNodeId);
 
+    // Return if included nodes contains only root node
     if (limit && remInclNodes.erase(rootNodeId) && remInclNodes.empty()) {
       return;
     }
@@ -94,6 +97,7 @@ namespace nlsr {
     int32_t head = queue[queueHead];
 
     while (true) {
+      // Enqueue adjacent nodes of current queue head
       for (size_t i = 0; i < m_nNodes; i++) {
         int32_t distance = m_adjMatrix[head][i];
 
@@ -105,11 +109,13 @@ namespace nlsr {
       }
 
       if (++queueHead < queueTail) {
+        // Select next node in queue and add it to the tree
         sortQueueByDistance();
         head = queue[queueHead];
         auto parent = m_tree[parents[head]];
         m_tree.addChild(parent, head);
 
+        // Stop algorithm once tree contains all included nodes
         if (limit && remInclNodes.erase(head) && remInclNodes.empty()) {
           break;
         }

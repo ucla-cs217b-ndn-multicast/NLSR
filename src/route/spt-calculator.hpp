@@ -31,6 +31,11 @@
 namespace nlsr {
   class ShortestPathTreeCalculator {
   public:
+    /*! \brief Constructs a new shortest-path tree calculator.
+     *
+     * @param nNodes The amount of network nodes.
+     * @param adjMatrix The adjacency matrix representing the network topology.
+     */
     explicit ShortestPathTreeCalculator(size_t nNodes, double** adjMatrix);
 
     ~ShortestPathTreeCalculator();
@@ -63,12 +68,25 @@ namespace nlsr {
     double* distances;
     Tree<int32_t> m_tree;
 
+    /*! \brief Enqueues a node in the processing queue and keeps track of its distance to the root node of the tree as
+     *  well as its parent node.
+     *
+     * @param node The node to enqueue.
+     * @param parent The parent node.
+     * @param distance The node's distance to the root node of the tree.
+     */
     void
     enqueue(int32_t node, int32_t parent, double distance);
 
+    /*! \brief Sorts the entries of the processing queue by ascending order of their distances to the root node of the
+     *  tree.
+     */
     void
     sortQueueByDistance();
 
+    /*! \brief Prunes of all branches that do not contain any of the included nodes.
+     *  \param inclNodes The nodes to be included in the tree.
+     */
     void
     pruneTree(const std::set<int32_t>& inclNodes);
   };

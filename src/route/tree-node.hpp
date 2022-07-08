@@ -33,6 +33,9 @@ namespace nlsr {
     using const_iterator = typename TreeNodeList::const_iterator;
 
   public:
+    /*! \brief Instantiates a new tree node holding the provided value.
+     *  \param value The value of the tree node.
+     */
     explicit TreeNode(ValueType value)
       : m_value(value)
     {
@@ -58,6 +61,10 @@ namespace nlsr {
       return m_parent.lock();
     }
 
+    /*! \brief Returns whether the tree node is a leaf node in the tree or not. A node is considered a leaf if it does
+     *  not have any child nodes associated.
+     *  \return true if the node is a leaf node, false otherwise.
+     */
     bool
     isLeaf()
     {

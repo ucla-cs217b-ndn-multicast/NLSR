@@ -37,6 +37,8 @@ namespace nlsr {
     using TreeNodePtr = std::shared_ptr<TreeNodeT>;
     using TreeNodePool = std::unordered_map<TreeNodeValueType, TreeNodePtr>;
 
+    /*! \brief Constructs a new empty tree.
+     */
     Tree()
     {
       m_root = std::shared_ptr<TreeNodeT>(nullptr);
@@ -50,6 +52,10 @@ namespace nlsr {
       return m_root;
     }
 
+    /*! \brief Creates a tree node with the provided value and sets it as the root node of the multicast tree.
+     *  \param rootValue The value of the tree node.
+     *  \return The created root node.
+     */
     Tree::TreeNodePtr
     setRoot(const TreeNodeValueType& rootValue);
 
@@ -86,6 +92,10 @@ namespace nlsr {
       pruneIf(m_root, predicate);
     }
 
+    /*! \brief Returns whether or not the tree contains a node with the given value.
+     *  \param value The value to check for.
+     *  \return true if the tree contains a node with that value, false otherwise.
+     */
     bool
     contains(const TreeNodeValueType& value);
 
