@@ -22,6 +22,8 @@
 #ifndef NLSR_TREE_HPP
 #define NLSR_TREE_HPP
 
+#include "test-access-control.hpp"
+
 #include <memory>
 #include <unordered_map>
 #include <ndn-cxx/name.hpp>
@@ -52,36 +54,30 @@ namespace nlsr {
       return m_root;
     }
 
-    /*! \brief Creates a tree node with the provided value and sets it as the root node of the multicast tree.
+    /*! \brief Creates a tree node with the provided value and sets it as the root node of the multicast tree if the
+     *  tree does not already contain a root node.
      *  \param rootValue The value of the tree node.
-     *  \return The created root node.
+     *  \return The created root node or null if the tree already contains a root node.
      */
     Tree::TreeNodePtr
     setRoot(const TreeNodeValueType& rootValue);
 
     /*! \brief Adds a child node with a given value to a node of the multicast tree.
      *  \param parent The parent node to which a child node is added.
-     *  \param childValue The value of the child node.
-     *  \return true if the child was added, false if not and the child is already assigned to another parent node
+     *  \param childValue The value of the child node. The value must be unique throughout the tree.
+     *  \return The created child node or null if the value is already present in the tree.
      */
     Tree::TreeNodePtr
     addChild(const TreeNodePtr &parent, const TreeNodeValueType& childValue);
 
     /*! \brief Adds a child node to a node of the multicast tree.
      *  \param parent The parent node to which a child node is added.
-     *  \param child The child node.
-     *  \return true if the child was added, false if not and the child is already assigned to another parent node
+     *  \param child The child node with a value that is unique throughout the tree.
+     *  \return true if the child was added, false if not and the child is already assigned to another parent node, the
+     *  value of the child node is already present in the tree or the child has other child nodes assigned to it.
      */
     bool
     addChild(const TreeNodePtr &parent, const TreeNodePtr &child);
-
-    /*! \brief Removes a child node from a node of the multicast tree.
-     *  \param parent The parent node of which a child node is removed.
-     *  \param child The child node.
-     *  \return true if the child was removed, false if not and the child is not assigned to the specified parent node
-     */
-    bool
-    removeChild(const TreeNodePtr &parent, const TreeNodePtr &child);
 
     /*! \brief Prunes of branches of that tree where the leaf nodes satisfy the given predicate.
      *  \param predicate The predicate for leaf nodes.
@@ -92,13 +88,6 @@ namespace nlsr {
       pruneIf(m_root, predicate);
     }
 
-    /*! \brief Returns whether or not the tree contains a node with the given value.
-     *  \param value The value to check for.
-     *  \return true if the tree contains a node with that value, false otherwise.
-     */
-    bool
-    contains(const TreeNodeValueType& value);
-
     /*! \brief Returns the node at a given index.
      *  \param The index.
      *  \return The node of that tree that corresponds to the specified index.
@@ -106,9 +95,19 @@ namespace nlsr {
     TreeNodePtr
     operator[](const TreeNodeValueType &index);
 
+  PUBLIC_WITH_TESTS_ELSE_PRIVATE:
+    TreeNodePtr m_root;
+
+    bool
+    contains(const TreeNodeValueType& value);
+
+    bool
+    removeChild(const TreeNodePtr &parent, const TreeNodePtr &child);
+
   private:
     TreeNodePool m_mctnPool;
-    TreeNodePtr m_root;
+
+
 
     void
     pruneIf(const TreeNodePtr& node, std::function<bool(TreeNodePtr)> predicate);
@@ -117,7 +116,12 @@ namespace nlsr {
   template <typename TreeNodeValueType>
   typename Tree<TreeNodeValueType>::TreeNodePtr
   Tree<TreeNodeValueType>::setRoot(const TreeNodeValueType &rootValue) {
+    if (nullptr != m_root) {
+      return Tree<TreeNodeValueType>::TreeNodePtr(nullptr);
+    }
+
     auto root = std::make_shared<TreeNodeT>(rootValue);
+
     m_root = root;
     m_mctnPool[rootValue] = root;
     return root;
@@ -127,6 +131,10 @@ namespace nlsr {
   typename Tree<TreeNodeValueType>::TreeNodePtr
   Tree<TreeNodeValueType>::addChild(const Tree::TreeNodePtr &parent,
                                     const TreeNodeValueType &childValue) {
+    if (contains(childValue)) {
+      return Tree<TreeNodeValueType>::TreeNodePtr(nullptr);
+    }
+
     auto child = parent->addChild(childValue);
     m_mctnPool[childValue] = child;
     return child;
@@ -136,6 +144,14 @@ namespace nlsr {
   bool
   Tree<TreeNodeValueType>::addChild(const Tree::TreeNodePtr &parent,
                                     const Tree::TreeNodePtr &child) {
+    if (child->beginChildren() != child->endChildren()) {
+      return false;
+    }
+
+    if (contains(child->getValue())) {
+      return false;
+    }
+
     if (!parent->addChild(child)) {
       return false;
     }
@@ -148,6 +164,10 @@ namespace nlsr {
   bool
   Tree<TreeNodeValueType>::removeChild(const Tree::TreeNodePtr &parent,
                                        const Tree::TreeNodePtr &child) {
+    if (child->beginChildren() != child->endChildren()) {
+      return false;
+    }
+
     if (!parent->removeChild(child)) {
       return false;
     }
