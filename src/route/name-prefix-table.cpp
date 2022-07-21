@@ -155,6 +155,7 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
   bool requireTreeRebuild = false;
 
   if (nameItr == m_mcTable.end()) { // No existing group
+    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to new multicast prefix: " << **nameItr);
     auto newGroup = std::make_shared<NamePrefixTableMulticastEntry>(name);
     newGroup->addMemberRouter(memberRouter);
     m_mcTable.push_back(newGroup);
@@ -163,6 +164,7 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
     requireTreeRebuild = true;
   }
   else { // Existing group found
+    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to existing multicast prefix: " << **nameItr);
     group = *nameItr;
     if (!(group->containsMemberRouter(memberRouter))) {
       group->addMemberRouter(memberRouter);
@@ -196,7 +198,8 @@ NamePrefixTable::removeMulticastEntry(const ndn::Name& grpNamePrefix, const ndn:
     return;
   }
 
-  group->removeMemberRouter(memberRouter); 
+  group->removeMemberRouter(memberRouter);
+  NLSR_LOG_TRACE("Removing origin: " << memberRouter << " from prefix: " << grpNamePrefix);
   rebuildMulticastTree(group);
   if (group->getMemberRouters().size() == 0) { 
     m_mcTable.erase(groupItr); 
@@ -207,14 +210,17 @@ void
 NamePrefixTable::rebuildMulticastTree(std::shared_ptr<NamePrefixTableMulticastEntry> group) 
 {
   // Ask the routing table to generate a NexthopList based on a multicast
-  // distribution tree. 
+  // distribution tree.
+  NLSR_LOG_TRACE("Calculating routing next hop list for multicast name " << group->getNamePrefix());
   auto nextHopList = m_routingTable.getMulticastNexthopList(group->getMemberRouters());
+  NLSR_LOG_TRACE("Finished multicast next hop list calculation");
+
   auto prefix = group->getNamePrefix(); 
 
   if (nextHopList->size() > 0) {
     NLSR_LOG_TRACE("Updating FIB with next hops for multicast prefix " << prefix); 
     // Add the multicast prefix to the FIB. 
-    m_fib.update(prefix, *nextHopList); 
+    m_fib.update(prefix, *nextHopList);
     // Inform the FIB that this prefix should use multicast forwarding. 
     // 0 => "retry setting the strategy 0 times". 
     m_fib.setStrategy(prefix, Fib::MULTICAST_STRATEGY, 0);

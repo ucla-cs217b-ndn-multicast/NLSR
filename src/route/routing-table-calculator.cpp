@@ -453,11 +453,16 @@ MulticastRoutingTableCalculator::calculateNextHopList(const std::set<ndn::Name>&
     destinationRouterIds.insert(ownRouterId);
   }
 
+  NLSR_LOG_TRACE("Calculating SPT for " << destinations.size() << "/" << m_nRouters <<" routers");
+
   ShortestPathTreeCalculator treeCalculator(m_nRouters, adjMatrix);
   treeCalculator.calculateTree(rootRouterId, destinationRouterIds);
 
   NexthopList nhl;
   Tree<int32_t> tree = treeCalculator.getTree();
+
+  NLSR_LOG_TRACE("Resulting SPT: " << tree.getRoot());
+
   auto ownTreeNode = tree[ownRouterId];
   auto parentNode = ownTreeNode->getParent();
 
