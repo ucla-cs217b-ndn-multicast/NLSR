@@ -155,7 +155,7 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
   bool requireTreeRebuild = false;
 
   if (nameItr == m_mcTable.end()) { // No existing group
-    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to new multicast prefix: " << **nameItr);
+    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to new multicast name prefix: " << name);
     auto newGroup = std::make_shared<NamePrefixTableMulticastEntry>(name);
     newGroup->addMemberRouter(memberRouter);
     m_mcTable.push_back(newGroup);
@@ -164,7 +164,7 @@ NamePrefixTable::addMulticastEntry(const ndn::Name& name, const ndn::Name& membe
     requireTreeRebuild = true;
   }
   else { // Existing group found
-    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to existing multicast prefix: " << **nameItr);
+    NLSR_LOG_TRACE("Adding origin: " << memberRouter << " to existing multicast name prefix: " << **nameItr);
     group = *nameItr;
     if (!(group->containsMemberRouter(memberRouter))) {
       group->addMemberRouter(memberRouter);

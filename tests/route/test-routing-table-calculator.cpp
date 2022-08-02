@@ -140,7 +140,7 @@ namespace nlsr {
             MulticastCalculatorFixture::ROUTER_C_NAME
         };
 
-        MulticastRoutingTableCalculator calculator(map.getMapSize(), map, lsdb, conf);
+        MulticastRoutingCalculator calculator(map.getMapSize(), map, lsdb, conf);
         NexthopList nexthopList = calculator.calculateNextHopList(destinations);
 
         BOOST_REQUIRE_EQUAL(nexthopList.getNextHops().size(), 2);

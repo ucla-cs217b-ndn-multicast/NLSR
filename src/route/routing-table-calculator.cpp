@@ -429,58 +429,79 @@ void LinkStateRoutingTableCalculator::freeDistance()
 }
 
 NexthopList
-MulticastRoutingTableCalculator::calculateNextHopList(const std::set<ndn::Name>& destinations)
+MulticastRoutingCalculator::calculateNextHopList(const std::set<ndn::Name>& destRouterPrefixes)
 {
-  std::set<int32_t> destinationRouterIds;
+  NLSR_LOG_TRACE("Calculating multicast next hop list for " << destRouterPrefixes.size() << " destination routers");
 
-  const ndn::Name& ownRouterName = m_confParam.getRouterPrefix();
-  int32_t ownRouterId = *m_map.getMappingNoByRouterName(ownRouterName);
+  const ndn::Name& ownRouterPrefix = m_confParam.getRouterPrefix();
+  ndn::optional<int32_t> ownRouterNo = m_map.getMappingNoByRouterName(ownRouterPrefix);
 
-  ndn::Name lowest = ownRouterName;
-  int32_t rootRouterId = ownRouterId;
+  if (!ownRouterNo) {
+    NLSR_LOG_DEBUG("Skipping calculation (own router not in topology)");
+    return NexthopList();
+  }
 
-  for (const ndn::Name& destination : destinations) {
-    int32_t destinationRouterId = *m_map.getMappingNoByRouterName(destination);
-    destinationRouterIds.insert(destinationRouterId);
+  std::set<int32_t> destRouterNos;
 
-    if (destination < lowest) {
-      lowest = destination;
-      rootRouterId = destinationRouterId;
+  if (destRouterPrefixes.find(ownRouterPrefix) == destRouterPrefixes.end()) {
+    NLSR_LOG_DEBUG("Adding own router as destination of the multicast tree");
+    destRouterNos.insert(*ownRouterNo);
+  }
+
+  ndn::Name lowestPrefix = ownRouterPrefix;
+  int32_t rootRouterNo = *ownRouterNo;
+
+  for (const ndn::Name& destRouterPrefix : destRouterPrefixes) {
+    ndn::optional<int32_t> destRouterNo = m_map.getMappingNoByRouterName(destRouterPrefix);
+
+    if (!destRouterNo) {
+      NLSR_LOG_TRACE("Excluding router " << destRouterPrefix << " (not in topology)");
+      continue;
+    }
+
+    destRouterNos.insert(*destRouterNo);
+
+    // Pick router with alphabetically lowest prefix as multicast tree root
+    if (destRouterPrefix < lowestPrefix) {
+      lowestPrefix = destRouterPrefix;
+      rootRouterNo = *destRouterNo;
     }
   }
 
-  if (destinations.find(ownRouterName) == destinations.end()) {
-    destinationRouterIds.insert(ownRouterId);
-  }
-
-  NLSR_LOG_TRACE("Calculating SPT for " << destinations.size() << "/" << m_nRouters <<" routers");
+  NLSR_LOG_TRACE("Calculating shortest-path tree for multicast routing");
+  NLSR_LOG_TRACE("Root router: " << lowestPrefix);
+  NLSR_LOG_TRACE("# destination routers: " << destRouterNos.size());
+  NLSR_LOG_TRACE("# all routers: " << m_nRouters);
 
   ShortestPathTreeCalculator treeCalculator(m_nRouters, adjMatrix);
-  treeCalculator.calculateTree(rootRouterId, destinationRouterIds);
+  treeCalculator.calculateTree(rootRouterNo, destRouterNos);
 
   NexthopList nhl;
   Tree<int32_t> tree = treeCalculator.getTree();
 
-  NLSR_LOG_TRACE("Resulting SPT: " << tree.getRoot());
+  NLSR_LOG_TRACE("Result:" << std::endl << tree.getRoot());
 
-  auto ownTreeNode = tree[ownRouterId];
-  auto parentNode = ownTreeNode->getParent();
+  auto ownNode = tree[*ownRouterNo];
+  auto parentNode = ownNode->getParent();
 
+  // Add next hop for parent node
   if (parentNode) {
     auto nh = getNextHop(m_map.getRouterNameByMappingNo(parentNode->getValue()).value());
     nhl.addNextHop(nh);
   }
 
-  for (auto itr = ownTreeNode->beginChildren(); itr != ownTreeNode->endChildren(); itr++) {
+  // Add next hops for child nodes
+  for (auto itr = ownNode->beginChildren(); itr != ownNode->endChildren(); itr++) {
     auto nh = getNextHop(m_map.getRouterNameByMappingNo((*itr)->getValue()).value());
     nhl.addNextHop(nh);
   }
 
+  NLSR_LOG_TRACE("Derived next hop list:" << std::endl << nhl);
   return nhl;
 }
 
 NextHop
-MulticastRoutingTableCalculator::getNextHop(const ndn::Name& adjRouter)
+MulticastRoutingCalculator::getNextHop(const ndn::Name& adjRouter)
 {
   AdjacencyList& adjList = m_confParam.getAdjacencyList();
   std::string nextHopFace = adjList.getAdjacent(adjRouter).getFaceUri().toString();

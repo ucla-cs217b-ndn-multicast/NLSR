@@ -204,9 +204,9 @@ public:
 
 };
 
-class MulticastRoutingTableCalculator : public RoutingTableCalculator {
+class MulticastRoutingCalculator : public RoutingTableCalculator {
 public:
-  MulticastRoutingTableCalculator(size_t nRouters, Map& map, Lsdb& lsdb, ConfParameter& confParam)
+  MulticastRoutingCalculator(size_t nRouters, Map& map, Lsdb& lsdb, ConfParameter& confParam)
       : RoutingTableCalculator(nRouters)
       , m_map(map)
       , m_confParam(confParam)
@@ -217,13 +217,13 @@ public:
     writeAdjMatrixLog(map);
   }
 
-  ~MulticastRoutingTableCalculator()
+  ~MulticastRoutingCalculator()
   {
     freeAdjMatrix();
   }
 
   NexthopList
-  calculateNextHopList(const std::set<ndn::Name>& destinations);
+  calculateNextHopList(const std::set<ndn::Name>& destRouterPrefixes);
 
 private:
   Map& m_map;

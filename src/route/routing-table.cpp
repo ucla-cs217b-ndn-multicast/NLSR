@@ -222,13 +222,13 @@ std::shared_ptr<NexthopList>
 RoutingTable::getMulticastNexthopList(const std::set<ndn::Name>& memberRouters) const
 {
   Map map;
-  auto lsaRange = m_lsdb.getLsdbIterator<CoordinateLsa>();
+  auto lsaRange = m_lsdb.getLsdbIterator<AdjLsa>();
   map.createFromCoordinateLsdb(lsaRange.first, lsaRange.second);
   map.writeLog();
 
   size_t nRouters = map.getMapSize();
 
-  MulticastRoutingTableCalculator calculator(nRouters, map, m_lsdb, m_confParam); 
+  MulticastRoutingCalculator calculator(nRouters, map, m_lsdb, m_confParam);
   return std::make_shared<NexthopList>(calculator.calculateNextHopList(memberRouters));
 }
 
