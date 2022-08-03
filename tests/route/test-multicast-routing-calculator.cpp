@@ -37,23 +37,15 @@ namespace nlsr {
     static const ndn::time::system_clock::TimePoint MAX_TIME =
         ndn::time::system_clock::TimePoint::max();
 
-    class MulticastCalculatorFixture : public BaseFixture
-    {
+    class MulticastRoutingCalculatorFixture : public BaseFixture {
     public:
-      MulticastCalculatorFixture()
-          : face(m_ioService, m_keyChain)
-          , conf(face, m_keyChain)
-          , confProcessor(conf)
-          , nlsr(face, m_keyChain, conf)
-          , routingTable(nlsr.m_routingTable)
-          , lsdb(nlsr.m_lsdb)
-      {
-        setUpTopology();
+      MulticastRoutingCalculatorFixture()
+          : face(m_ioService, m_keyChain), conf(face, m_keyChain), confProcessor(conf), nlsr(face, m_keyChain, conf),
+            routingTable(nlsr.m_routingTable), lsdb(nlsr.m_lsdb) {
       }
 
       // Triangle topology with routers A, B, C connected
-      void setUpTopology()
-      {
+      void setUpTopology() {
         Adjacent a(ROUTER_A_NAME, ndn::FaceUri(ROUTER_A_FACE), 0, Adjacent::STATUS_ACTIVE, 0, 0);
         Adjacent b(ROUTER_B_NAME, ndn::FaceUri(ROUTER_B_FACE), 0, Adjacent::STATUS_ACTIVE, 0, 0);
         Adjacent c(ROUTER_C_NAME, ndn::FaceUri(ROUTER_C_FACE), 0, Adjacent::STATUS_ACTIVE, 0, 0);
@@ -62,7 +54,7 @@ namespace nlsr {
         b.setLinkCost(LINK_AB_COST);
         c.setLinkCost(LINK_AC_COST);
 
-        AdjacencyList& adjacencyListA = conf.getAdjacencyList();
+        AdjacencyList &adjacencyListA = conf.getAdjacencyList();
         adjacencyListA.insert(b);
         adjacencyListA.insert(c);
 
@@ -102,8 +94,8 @@ namespace nlsr {
       Nlsr nlsr;
       Map map;
 
-      RoutingTable& routingTable;
-      Lsdb& lsdb;
+      RoutingTable &routingTable;
+      Lsdb &lsdb;
 
       static const ndn::Name ROUTER_A_NAME;
       static const ndn::Name ROUTER_B_NAME;
@@ -118,38 +110,54 @@ namespace nlsr {
       static const double LINK_BC_COST;
     };
 
-    const ndn::Name MulticastCalculatorFixture::ROUTER_A_NAME = "/ndn/site/%C1.Router/this-router";
-    const ndn::Name MulticastCalculatorFixture::ROUTER_B_NAME = "/ndn/site/%C1.Router/b";
-    const ndn::Name MulticastCalculatorFixture::ROUTER_C_NAME = "/ndn/site/%C1.Router/c";
+    const ndn::Name MulticastRoutingCalculatorFixture::ROUTER_A_NAME = "/ndn/site/%C1.Router/this-router";
+    const ndn::Name MulticastRoutingCalculatorFixture::ROUTER_B_NAME = "/ndn/site/%C1.Router/b";
+    const ndn::Name MulticastRoutingCalculatorFixture::ROUTER_C_NAME = "/ndn/site/%C1.Router/c";
 
-    const std::string MulticastCalculatorFixture::ROUTER_A_FACE = "udp4://10.0.0.1";
-    const std::string MulticastCalculatorFixture::ROUTER_B_FACE = "udp4://10.0.0.2";
-    const std::string MulticastCalculatorFixture::ROUTER_C_FACE = "udp4://10.0.0.3";
+    const std::string MulticastRoutingCalculatorFixture::ROUTER_A_FACE = "udp4://10.0.0.1";
+    const std::string MulticastRoutingCalculatorFixture::ROUTER_B_FACE = "udp4://10.0.0.2";
+    const std::string MulticastRoutingCalculatorFixture::ROUTER_C_FACE = "udp4://10.0.0.3";
 
-    const double MulticastCalculatorFixture::LINK_AB_COST = 5;
-    const double MulticastCalculatorFixture::LINK_AC_COST = 10;
-    const double MulticastCalculatorFixture::LINK_BC_COST = 17;
+    const double MulticastRoutingCalculatorFixture::LINK_AB_COST = 5;
+    const double MulticastRoutingCalculatorFixture::LINK_AC_COST = 10;
+    const double MulticastRoutingCalculatorFixture::LINK_BC_COST = 17;
 
-    BOOST_FIXTURE_TEST_SUITE(TestMulticastRoutingTableCalculator, MulticastCalculatorFixture)
+    BOOST_FIXTURE_TEST_SUITE(TestMulticastRoutingCalculator, MulticastRoutingCalculatorFixture)
 
       BOOST_AUTO_TEST_CASE(Basic)
       {
-        std::set<ndn::Name> destinations {
-            MulticastCalculatorFixture::ROUTER_A_NAME,
-            MulticastCalculatorFixture::ROUTER_B_NAME,
-            MulticastCalculatorFixture::ROUTER_C_NAME
+        setUpTopology();
+
+        std::set<ndn::Name> destinations{
+            MulticastRoutingCalculatorFixture::ROUTER_A_NAME,
+            MulticastRoutingCalculatorFixture::ROUTER_B_NAME,
+            MulticastRoutingCalculatorFixture::ROUTER_C_NAME
         };
 
         MulticastRoutingCalculator calculator(map.getMapSize(), map, lsdb, conf);
         NexthopList nexthopList = calculator.calculateNextHopList(destinations);
 
-        BOOST_REQUIRE_EQUAL(nexthopList.getNextHops().size(), 2);
+        BOOST_REQUIRE_EQUAL(2, nexthopList.getNextHops().size());
 
-        for (const NextHop& hop : nexthopList) {
+        for (const NextHop &hop : nexthopList) {
           std::string faceUri = hop.getConnectingFaceUri();
 
           BOOST_CHECK(faceUri == ROUTER_B_FACE || faceUri == ROUTER_C_FACE);
         }
+      }
+
+      BOOST_AUTO_TEST_CASE(MissingTopology)
+      {
+        std::set<ndn::Name> destinations{
+            MulticastRoutingCalculatorFixture::ROUTER_A_NAME,
+            MulticastRoutingCalculatorFixture::ROUTER_B_NAME,
+            MulticastRoutingCalculatorFixture::ROUTER_C_NAME
+        };
+
+        MulticastRoutingCalculator calculator(map.getMapSize(), map, lsdb, conf);
+        NexthopList nexthopList = calculator.calculateNextHopList(destinations);
+
+        BOOST_REQUIRE_EQUAL(0, nexthopList.getNextHops().size());
       }
 
     BOOST_AUTO_TEST_SUITE_END()
