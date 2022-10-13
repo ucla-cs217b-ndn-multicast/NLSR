@@ -32,5 +32,8 @@ cscope.in.out
 cscope.out
 cscope.po.out
 
+# LLVM compilation database, needed for clangd, etc. 
+compile_commands.json
+
 # Other
 /VERSION.info
